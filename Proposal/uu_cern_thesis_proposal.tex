@@ -1,0 +1,266 @@
+\documentclass[12pt]{article}
+
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{graphicx}
+\graphicspath{ {./images/} }
+
+\usepackage{listingsutf8}
+\usepackage[utf8]{inputenc}
+
+\usepackage[a4paper, total={16cm, 23.7cm}]{geometry}
+\DeclareMathSizes{12}{13}{10}{8}
+\setlength\parindent{0pt}
+
+\usepackage[colorlinks=true,urlcolor=blue]{hyperref}
+\usepackage{color}
+
+\newcommand*\diff{\mathop{}\!\mathrm{d}}
+\newcommand*\Diff[1]{\mathop{}\!\mathrm{d^#1}}
+\newcommand\tab[1][.7cm]{\hspace*{#1}}
+\renewcommand{\refname}{}
+
+\fontfamily{phv}
+
+% !TeX spellcheck = en_US
+
+
+\begin{document}	
+	
+	%----------------------------------------------------------------------------
+	% TITLE
+	%----------------------------------------------------------------------------
+	\begin{center}
+		\Huge Optimization of the trigger software of the LHCb experiment\\		
+		\Large Thesis requirements specification\\
+		\vspace{1pc}
+		\huge Péter Kardos \\
+		\large 2018-2019
+	\end{center}
+	\vspace{.5pc}
+	
+	
+	%----------------------------------------------------------------------------
+	% DRAFTING
+	%----------------------------------------------------------------------------
+	\textcolor{red}{red: instruction from uni}
+	
+	\textcolor{blue}{blue: my vague ideas/question about things i don't know much about}
+	
+	
+	%----------------------------------------------------------------------------
+	% BACKGROUND
+	%----------------------------------------------------------------------------
+	\section{Background}
+	
+	\color{red}
+	Here you describe in what context your thesis is to be done.
+	\color{black}
+	
+	CERN is a nuclear research organization which runs the world's largest particle accelerator to discover, identify and verify elementary particles and laws of physics. Along the accelerator tube, there are multiple points where high energy particle collisions occur. At one of these points are the devices of the LHCb experiment located, of which the online data-processing software is the subject of this thesis work. Sensors generate a large amount of data about collisions, but only a small fraction of it is interesting and is worth storing for further processing. Interesting events must be filtered for in real-time, thus the performance of the so called trigger code that selects the important events is of critical importance.
+	
+	\vspace{1pc}
+	\color{blue}
+	- a few words about what data is measured \\
+	- what data we reconstruct from it in real-time? (particle paths and...?)\\
+	- what events are found interesting?
+	\color{black}
+	
+	\vspace{1pc}
+	
+	\color{red}
+	What prerequisites are valid, what is the goal of the project from the supervisors point of view, what is available and has been done before, under what circumstances should the work be done.
+	\color{black}
+	
+	\color{blue}
+	- what do we currently have? \\
+	\tab - single core trigger software working I assume? \\
+	\tab - do we have test data stored offline? \\
+	- so we want it at least 3 times faster, but \\
+	\tab - do we benefit from making it 10 times faster? \\
+	\color{black}
+	
+	
+	
+	%----------------------------------------------------------------------------
+	% DESCRIPTION
+	%----------------------------------------------------------------------------
+	\newpage
+	\section{Description of the task}
+	
+	\color{red}
+	what should be done \\
+	what tasks/parts does the work consists of \\
+	how we go about it
+	\color{black}
+	\vspace{1pc}
+	
+	
+	\color{blue}
+	- what hardware are we aiming for? \\
+	\tab - simple multi-core CPU ( 16 threads, 100 watts ) \\
+	\tab - distributed systems ( 100-800 threads, 20 kW ) \\
+	\tab - gpgpu ( 80k or more threads, 1000 watts ) \\
+	this is based on how fast we want it and if it's even possible to parallelize it that much
+	\color{black}
+	\vspace{1pc}
+	
+	Developing the application is not a linear, but an iterative process, so the below points might repeat or overlap.
+	
+	
+	\subsection{Getting familiar with code base}
+	
+	Understanding the architecture of the code, learning to navigate among source files, getting familiar with software development environment and compilation process.
+	
+	\subsection{Identifying parallelizable points}
+	
+	Finding parts in the sequential code which can be made parallel. Ideally, the bulk of the computationally intensive code should be running in parallel.
+		
+	\subsection{Sketching a parallel architecture}
+	
+	Determining how algorithms will make use of vectorized instructions and multiple threads. Data layout has to be adjusted accordingly. Additionally, data layout has to be cache-friendly.
+	
+	\subsection{Implementing the parallel system}
+	
+	The sketched system is implemented in code, modifications to the imagined architecture are made where necessary.
+	
+	\subsection{Regression testing}
+	
+	The optimized system has to produce the same results as the previous one.
+	
+	\subsection{Profile performance}
+	
+	The performance of the optimized system is evaluated, and the system is modified to mitigate design and implementation flaws made earlier, thereby increasing performance.
+	
+	
+
+	%----------------------------------------------------------------------------
+	% METHODS
+	%----------------------------------------------------------------------------
+	\newpage
+	\section{Methods}
+	
+	\color{red}
+	- systems \\
+	- tools \\
+	- methods \\
+	- how is it evaluated \\
+	\color{black}
+	
+	Programming environment:
+	\begin{itemize}
+		\item C++
+		\item Python
+		\item Multi-core systems
+	\end{itemize}
+
+	Methods:
+	\begin{itemize}
+		\item SSE and/or AVX vectorization
+		\item Multi-threading
+		\item Cache and data layout optimization
+	\end{itemize}
+
+	Evaluation:
+	\begin{itemize}
+		\color{blue}
+		\item Valgrind?
+		\item Cachegrind?
+		\item Intel Parallel Studio XE?
+		\item Visual Studio performance profiler?
+		\color{black}
+		\item Manual timing measurements
+	\end{itemize}
+
+	The goal is to optimize and make code faster, which requires high performance, low level languages such as C++ and a constant performance evaluation using various profilers.
+
+
+
+	%----------------------------------------------------------------------------
+	% RELEVANT COURSES
+	%----------------------------------------------------------------------------
+	\newpage
+	\section{Relevant courses}
+	
+	\begin{itemize}
+		\item \href{http://www.uu.se/en/admissions/master/selma/kursplan/?kpid=31898&type=1}
+			{Parallel and Distributed Computing}
+		
+		\item \href{http://www.uu.se/en/admissions/master/selma/kursplan/?kpid=31897&lasar=18%2F19&typ=1}
+			{High Performance Programming}	
+	\end{itemize}
+
+	Depending on what I will exactly do, I may use these to understand what I'm coding:
+	\begin{itemize}
+		\item Mathematical Methods of Physics II (hilbert spaces, metric spaces, manifolds, vector space, lie algebra)(if I pass, haha)
+		\item Applied Mathematics (perturbation theory, diff eq's, integral eq's)
+		\item Computational Physics (numerical integration, differentiation)
+		\item Quantum Physics (schrödinger eq, wave functions and solutions, bra-ket, state collapse, hydrogen atom)
+	\end{itemize}
+	
+	
+	
+	%----------------------------------------------------------------------------
+	% DELIMITATIONS
+	%----------------------------------------------------------------------------
+	\section{Delimitations}
+
+	\color{red}
+	- stuff that won't be done\\
+	- stuff that is done only if enough time\\
+	- stuff that is skipped if too little time \\
+	! my stay is way longer than time needed, nothing will be left out probably\\
+	! we can say there was no time if we don't want to do it :) \\
+	\color{black}
+	
+	e.g. developing all-new algorithms and formulas is out of scope
+
+
+
+	%----------------------------------------------------------------------------
+	% TIME PLAN
+	%----------------------------------------------------------------------------
+	\section{Time plan}
+		
+	\color{red}
+	- largely based on sec 2 \\
+	- 5 or 8 months of work (30 or 45 cred thesis) \\
+	- a task max 1 month long \\
+	- graphical plan encouraged (i.e. task graph) \\
+	- graph may have conditionals?
+	\color{black}
+	
+	
+	
+	%----------------------------------------------------------------------------
+	% REFERENCES
+	%----------------------------------------------------------------------------
+	\section{References}
+	
+	\color{red}
+	I'm gonna come up with something.
+	\color{black}
+	
+
+\end{document}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
