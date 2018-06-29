@@ -64,22 +64,30 @@
 	- a few words about what data is measured \\
 	- what data we reconstruct from it in real-time? (particle paths and...?)\\
 	- what events are found interesting?
-	\color{black}
+
+        The filtering happens in several steps. Initially fast dedicated hardware electronics is collecting the data from the detector and building so called raw events. These are then decoded and analyzed in a large farm of standard servers where particles trajectories are reconstructed and analyzed in order to decide whether the ``event'' is worth recording or not based on caracteristics like momentum and type of tracks. This process will happen at a rate of 30MHz from 2021 on, distributed across 1000 nodes leaving only 30us for each event reconstruction on average.
+        \color{black}
 	
 	\vspace{1pc}
 	
 	\color{red}
 	What prerequisites are valid, what is the goal of the project from the supervisors point of view, what is available and has been done before, under what circumstances should the work be done.
 	\color{black}
-	
+
 	\color{blue}
 	- what do we currently have? \\
 	\tab - single core trigger software working I assume? \\
 	\tab - do we have test data stored offline? \\
 	- so we want it at least 3 times faster, but \\
 	\tab - do we benefit from making it 10 times faster? \\
+
+        In order to achieve this ambitious goal, the current software of the LHCb experiment needs to be reviewed to take full benefit of modern processors features, particularly concerning many cores and low level parallelization, like vectorization and superscalar processors.
+
+        As the main code is dating from early 2000s, the underlying framework itself (named Gaudi) was not prepared for this. However a lot of effort has been put in modernizing it in the past years, and it is now time to adapt the LHCb code accordingly. The overall goal is to achieve a speedup of a factor 6 compared to the original code, factor 3 compared to what we have today, after the first round of optimizations.
+
+        A failure to reach this goal would mean to lower the rate of interesting events reaching offline analysis and thus limiting the physics potential of the overall experiment.
+        
 	\color{black}
-	
 	
 	
 	%----------------------------------------------------------------------------
@@ -102,9 +110,26 @@
 	\tab - distributed systems ( 100-800 threads, 20 kW ) \\
 	\tab - gpgpu ( 80k or more threads, 1000 watts ) \\
 	this is based on how fast we want it and if it's even possible to parallelize it that much
+
+        The main task of this thesis work will be to participate in the optimization of the LHCb software, in particular in the areas of the trigger system, level 1 and level 2. Mains directions are :
+        \begin{itemize}
+        \item run benchmarks to measure efficiency of the current code base
+        \item analysing the current limitations using appropriate tools like calgrind, perf or vtune
+        \item make proposals to improve the code efficiency. This can be rewrite of selected subparts, optimizations of data structures, new algorithms for some processing, etc, etc
+        \item implement a few of these optimizations
+        \item measure improvements achieved
+        \item share the acquired knowledge with the rest of the collaboration so that others can apply same methods on other pieces of code.
+        \end{itemize}
 	\color{black}
 	\vspace{1pc}
-	
+
+        [Note, not to be kept] The work will not that much consist in identifying parallelism as we have 30KHz of fully independent events to handle, so we are facing what is called in the litterature embarassing parallelism, that I would call trivial parallelism. The problem is that the code that can run in parallel all these events needs to be thread safe and efficient, which it is not at all.
+        [end of note]
+
+        \color{blue}
+        The resulting code has to be able to run on manycore systems (40 to >100 cores) running standard Intel or AMD processors and a recent linux distribution.
+        \color{black}
+        
 	Developing the application is not a linear, but an iterative process, so the below points might repeat or overlap.
 	
 	
@@ -149,26 +174,24 @@
 	
 	Programming environment:
 	\begin{itemize}
-		\item C++
+		\item C++, latest specification
 		\item Python
 		\item Multi-core systems
 	\end{itemize}
 
 	Methods:
 	\begin{itemize}
-		\item SSE and/or AVX vectorization
+		\item AVX2 and/or AVX512 vectorization
 		\item Multi-threading
 		\item Cache and data layout optimization
+                \item vectorization using external libraries like VC or VCL
 	\end{itemize}
 
 	Evaluation:
 	\begin{itemize}
-		\color{blue}
-		\item Valgrind?
-		\item Cachegrind?
-		\item Intel Parallel Studio XE?
-		\item Visual Studio performance profiler?
-		\color{black}
+		\item Cachegrind
+		\item Intel Parallel Studio XE
+                \item perf
 		\item Manual timing measurements
 	\end{itemize}
 
@@ -190,6 +213,13 @@
 			{High Performance Programming}	
 	\end{itemize}
 
+        \color{blue}
+              [note to be dropped]LHCb and CERN are providing internally several courses that may be beneficial, in particular around C++, performance optimization and vectorization. We will see how you can benefit from them. One goal of this work can also be to deliver one of these courses at the end.
+
+              I also see that you've listed some physics courses. This won't be useful. We stay at the pure computing level.
+              [end of note]
+        \color{black}
+        
 	Depending on what I will exactly do, I may use these to understand what I'm coding:
 	\begin{itemize}
 		\item Mathematical Methods of Physics II (hilbert spaces, metric spaces, manifolds, vector space, lie algebra)(if I pass, haha)
@@ -214,7 +244,9 @@
 	\color{black}
 	
 	e.g. developing all-new algorithms and formulas is out of scope
-
+        \color{blue}
+        we will concentrate on software optimizations, so no change to the physics algorithms is foreseen. Also we will not enter the GPU area, this is handled by another subset of the team.
+        \color{black}
 
 
 	%----------------------------------------------------------------------------
@@ -230,7 +262,15 @@
 	- graph may have conditionals?
 	\color{black}
 	
-	
+	\color{blue}
+        \begin{itemize}
+        \item learning the environment and the tools -> 2 months
+        \item benchmarking and drawing conclusions on the pieces to improve -> 2months
+        \item implementing an improved version of a given piece of code -> 3 months
+        \item validating results and fine tuning optimization -> 1 months
+        \end{itemize}
+        and we have free space for going further/spending more time/targetting more code.
+        \color{black}
 	
 	%----------------------------------------------------------------------------
 	% REFERENCES
