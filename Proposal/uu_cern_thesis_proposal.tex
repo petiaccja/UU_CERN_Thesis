@@ -41,53 +41,30 @@
 	
 	
 	%----------------------------------------------------------------------------
-	% DRAFTING
-	%----------------------------------------------------------------------------
-	\textcolor{red}{red: instruction from uni}
-	
-	\textcolor{blue}{blue: my vague ideas/question about things i don't know much about}
-	
-	
-	%----------------------------------------------------------------------------
 	% BACKGROUND
 	%----------------------------------------------------------------------------
 	\section{Background}
+		
+	CERN\cite{cern_about} is a nuclear research organization that hosts the world's largest particle accelerator\cite{lhc_desc}. The accelerator is a circular tube, with a circumference of about 27km. Batches of protons are circulating in both directions, with the opposite directions intersecting at a few points, giving possibility for the proton beams to collide. This thesis project is focused on the software that processes the data collected during the collisions for the LHCb\cite{lchb_desc} experiment.
 	
-	\color{red}
-	Here you describe in what context your thesis is to be done.
-	\color{black}
+	\vspace{0.7pc}
+	The amount of data generated for collisions is huge, however, only a small fraction of events are worth storing for further investigation. The purpose of the so-called \textit{trigger software} is to process the data in real-time to filter for interesting events.
+	The filtering happens in several steps. Initially fast dedicated hardware electronics collect the data from the detector and build so called raw events. These are then decoded and analyzed in a large farm of standard servers where particles trajectories are reconstructed and analyzed in order to decide whether the event is worth recording or not based on characteristics such as momentum and type of tracks. This process will happen at a rate of 30MHz from 2021 on, leaving only 30us on average for each event reconstruction. Computations are distributed across 1000 nodes.
 	
-	CERN is a nuclear research organization which runs the world's largest particle accelerator to discover, identify and verify elementary particles and laws of physics. Along the accelerator tube, there are multiple points where high energy particle collisions occur. At one of these points are the devices of the LHCb experiment located, of which the online data-processing software is the subject of this thesis work. Sensors generate a large amount of data about collisions, but only a small fraction of it is interesting and is worth storing for further processing. Interesting events must be filtered for in real-time, thus the performance of the so called trigger code that selects the important events is of critical importance.
-	
-	\vspace{1pc}
 	\color{blue}
-	- a few words about what data is measured \\
-	- what data we reconstruct from it in real-time? (particle paths and...?)\\
-	- what events are found interesting?
-
-        The filtering happens in several steps. Initially fast dedicated hardware electronics is collecting the data from the detector and building so called raw events. These are then decoded and analyzed in a large farm of standard servers where particles trajectories are reconstructed and analyzed in order to decide whether the ``event'' is worth recording or not based on caracteristics like momentum and type of tracks. This process will happen at a rate of 30MHz from 2021 on, distributed across 1000 nodes leaving only 30us for each event reconstruction on average.
-        \color{black}
-	
-	\vspace{1pc}
-	
-	\color{red}
-	What prerequisites are valid, what is the goal of the project from the supervisors point of view, what is available and has been done before, under what circumstances should the work be done.
+	So 40-100 cores for now, but operational work will be on 1000 cores?
 	\color{black}
-
-	\color{blue}
-	- what do we currently have? \\
-	\tab - single core trigger software working I assume? \\
-	\tab - do we have test data stored offline? \\
-	- so we want it at least 3 times faster, but \\
-	\tab - do we benefit from making it 10 times faster? \\
-
-        In order to achieve this ambitious goal, the current software of the LHCb experiment needs to be reviewed to take full benefit of modern processors features, particularly concerning many cores and low level parallelization, like vectorization and superscalar processors.
-
-        As the main code is dating from early 2000s, the underlying framework itself (named Gaudi) was not prepared for this. However a lot of effort has been put in modernizing it in the past years, and it is now time to adapt the LHCb code accordingly. The overall goal is to achieve a speedup of a factor 6 compared to the original code, factor 3 compared to what we have today, after the first round of optimizations.
-
-        A failure to reach this goal would mean to lower the rate of interesting events reaching offline analysis and thus limiting the physics potential of the overall experiment.
-        
-	\color{black}
+	
+	
+	\vspace{0.7pc}	
+	As the main code is dating from early 2000s, the underlying framework itself (named Gaudi) was not prepared for such workload and environment. A lot of effort has been put into modernizing it in the past years but the performance is not satisfactory yet. The goal is to achieve a 3 times speedup of the code compared to its current state. (This means a 6 times speedup compared to the code before modernization.)
+	
+	\vspace{0.7pc}
+	In order to achieve this ambitious goal, the current software of the LHCb experiment needs to be revamped to take full advantage of modern processor features. Many core systems, low level parallelization, SIMD vectorization and efficiently utilizing superscalar architectures are of particular interest.
+	
+	
+	\vspace{0.7pc}
+	Failure to deliver required performance improvements would mean that the number of interesting events reaching the offline analysis stage would be reduced, limiting the physics potential of the overall experiment.	
 	
 	
 	%----------------------------------------------------------------------------
@@ -96,81 +73,31 @@
 	\newpage
 	\section{Description of the task}
 	
-	\color{red}
-	what should be done \\
-	what tasks/parts does the work consists of \\
-	how we go about it
-	\color{black}
-	\vspace{1pc}
-	
+	The bulk of the thesis project is to participate in the optimization of the trigger code, which needs to be able to efficiently run on many-core systems (40 to 100+ cores) of Intel/AMD processors on a recent Linux distribution. Given the large number of events, the focus is not so much on introducing parallelism itself, but on making it efficient by using appropriate data structures and data organization.
 	
 	\color{blue}
-	- what hardware are we aiming for? \\
-	\tab - simple multi-core CPU ( 16 threads, 100 watts ) \\
-	\tab - distributed systems ( 100-800 threads, 20 kW ) \\
-	\tab - gpgpu ( 80k or more threads, 1000 watts ) \\
-	this is based on how fast we want it and if it's even possible to parallelize it that much
-
-        The main task of this thesis work will be to participate in the optimization of the LHCb software, in particular in the areas of the trigger system, level 1 and level 2. Mains directions are :
-        \begin{itemize}
-        \item run benchmarks to measure efficiency of the current code base
-        \item analysing the current limitations using appropriate tools like calgrind, perf or vtune
-        \item make proposals to improve the code efficiency. This can be rewrite of selected subparts, optimizations of data structures, new algorithms for some processing, etc, etc
-        \item implement a few of these optimizations
-        \item measure improvements achieved
-        \item share the acquired knowledge with the rest of the collaboration so that others can apply same methods on other pieces of code.
-        \end{itemize}
+	We work on both level 1 \& level 2 of the trigger system. Is this important to include? \\
+	Is L1 the HW electronics and L2 the distributed system, or the distributed system has multiple levels?
 	\color{black}
+	
 	\vspace{1pc}
-
-        [Note, not to be kept] The work will not that much consist in identifying parallelism as we have 30KHz of fully independent events to handle, so we are facing what is called in the litterature embarassing parallelism, that I would call trivial parallelism. The problem is that the code that can run in parallel all these events needs to be thread safe and efficient, which it is not at all.
-        [end of note]
-
-        \color{blue}
-        The resulting code has to be able to run on manycore systems (40 to >100 cores) running standard Intel or AMD processors and a recent linux distribution.
-        \color{black}
-        
-	Developing the application is not a linear, but an iterative process, so the below points might repeat or overlap.
+	The work consists of the following main points:
 	
-	
-	\subsection{Getting familiar with code base}
-	
-	Understanding the architecture of the code, learning to navigate among source files, getting familiar with software development environment and compilation process.
-	
-	\subsection{Identifying parallelizable points}
-	
-	Finding parts in the sequential code which can be made parallel. Ideally, the bulk of the computationally intensive code should be running in parallel.
+	\begin{itemize}
+		\item Benchmark existing code to measure efficiency of the current code base.
+		\item Discover limitations using tools such as Cachegrind, perf and Intel VTune Amplifier.
+		\item Make proposals to improve efficiency: a proposal can be rewriting subparts, reorganizing data structures, new processing algorithms, among others.
+		\item Implement some of these optimizations.
+		\item Measure improvements achieved.
+		\item Share the acquired knowledge with colleagues so that they can make use of the same optimization techniques.
+	\end{itemize}	
 		
-	\subsection{Sketching a parallel architecture}
-	
-	Determining how algorithms will make use of vectorized instructions and multiple threads. Data layout has to be adjusted accordingly. Additionally, data layout has to be cache-friendly.
-	
-	\subsection{Implementing the parallel system}
-	
-	The sketched system is implemented in code, modifications to the imagined architecture are made where necessary.
-	
-	\subsection{Regression testing}
-	
-	The optimized system has to produce the same results as the previous one.
-	
-	\subsection{Profile performance}
-	
-	The performance of the optimized system is evaluated, and the system is modified to mitigate design and implementation flaws made earlier, thereby increasing performance.
-	
-	
 
 	%----------------------------------------------------------------------------
 	% METHODS
 	%----------------------------------------------------------------------------
 	\newpage
 	\section{Methods}
-	
-	\color{red}
-	- systems \\
-	- tools \\
-	- methods \\
-	- how is it evaluated \\
-	\color{black}
 	
 	Programming environment:
 	\begin{itemize}
@@ -184,18 +111,16 @@
 		\item AVX2 and/or AVX512 vectorization
 		\item Multi-threading
 		\item Cache and data layout optimization
-                \item vectorization using external libraries like VC or VCL
+		\item Vectorization using external libraries like VC or VCL
 	\end{itemize}
 
 	Evaluation:
 	\begin{itemize}
 		\item Cachegrind
 		\item Intel Parallel Studio XE
-                \item perf
+		\item perf
 		\item Manual timing measurements
 	\end{itemize}
-
-	The goal is to optimize and make code faster, which requires high performance, low level languages such as C++ and a constant performance evaluation using various profilers.
 
 
 
@@ -213,20 +138,10 @@
 			{High Performance Programming}	
 	\end{itemize}
 
-        \color{blue}
-              [note to be dropped]LHCb and CERN are providing internally several courses that may be beneficial, in particular around C++, performance optimization and vectorization. We will see how you can benefit from them. One goal of this work can also be to deliver one of these courses at the end.
 
-              I also see that you've listed some physics courses. This won't be useful. We stay at the pure computing level.
-              [end of note]
-        \color{black}
-        
-	Depending on what I will exactly do, I may use these to understand what I'm coding:
-	\begin{itemize}
-		\item Mathematical Methods of Physics II (hilbert spaces, metric spaces, manifolds, vector space, lie algebra)(if I pass, haha)
-		\item Applied Mathematics (perturbation theory, diff eq's, integral eq's)
-		\item Computational Physics (numerical integration, differentiation)
-		\item Quantum Physics (schrödinger eq, wave functions and solutions, bra-ket, state collapse, hydrogen atom)
-	\end{itemize}
+	% NOTE ON CERN INTERNAL COURSES
+	% LHCb and CERN are providing internally several courses that may be beneficial, in particular around C++, performance optimization and vectorization. We will see how you can benefit from them. One goal of this work can also be to deliver one of these courses at the end.
+
 	
 	
 	
@@ -235,18 +150,8 @@
 	%----------------------------------------------------------------------------
 	\section{Delimitations}
 
-	\color{red}
-	- stuff that won't be done\\
-	- stuff that is done only if enough time\\
-	- stuff that is skipped if too little time \\
-	! my stay is way longer than time needed, nothing will be left out probably\\
-	! we can say there was no time if we don't want to do it :) \\
-	\color{black}
+	The work is solely focused on delivering CPU computing optimizations. As such, GPU computations are out of scope, and so is the development of new physics algorithms.
 	
-	e.g. developing all-new algorithms and formulas is out of scope
-        \color{blue}
-        we will concentrate on software optimizations, so no change to the physics algorithms is foreseen. Also we will not enter the GPU area, this is handled by another subset of the team.
-        \color{black}
 
 
 	%----------------------------------------------------------------------------
@@ -254,33 +159,27 @@
 	%----------------------------------------------------------------------------
 	\section{Time plan}
 		
-	\color{red}
-	- largely based on sec 2 \\
-	- 5 or 8 months of work (30 or 45 cred thesis) \\
-	- a task max 1 month long \\
-	- graphical plan encouraged (i.e. task graph) \\
-	- graph may have conditionals?
-	\color{black}
-	
-	\color{blue}
-        \begin{itemize}
-        \item learning the environment and the tools -> 2 months
-        \item benchmarking and drawing conclusions on the pieces to improve -> 2months
-        \item implementing an improved version of a given piece of code -> 3 months
-        \item validating results and fine tuning optimization -> 1 months
-        \end{itemize}
-        and we have free space for going further/spending more time/targetting more code.
-        \color{black}
+	\begin{itemize}
+		\item Learning the environment and the tools (\textbf{2 months})
+		\item Benchmarking and drawing conclusions on the pieces to improve (\textbf{2 months})
+		\item Implementing an improved version of a given piece of code (\textbf{3 months})
+		\item Validating results and fine tuning optimization (\textbf{1 month})
+	\end{itemize}
+
 	
 	%----------------------------------------------------------------------------
 	% REFERENCES
 	%----------------------------------------------------------------------------
 	\section{References}
 	
-	\color{red}
-	I'm gonna come up with something.
-	\color{black}
-	
+	\begin{thebibliography}{asd}
+		\bibitem{cern_about} About CERN: \\
+			\url{https://home.cern/about}
+		\bibitem{lhc_desc} About the Large Hadron Collider: \\
+			\url{https://home.cern/topics/large-hadron-collider}
+		\bibitem{lchb_desc} About the Large Hadron Collider beaty experiment: \\
+			\url{https://home.cern/about/experiments/lhcb}
+	\end{thebibliography}
 
 \end{document}
 
