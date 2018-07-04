@@ -37,31 +37,29 @@
 		\huge Péter Kardos \\
 		\large 2018-2019
 	\end{center}
-	\vspace{.5pc}
 	
 	
 	%----------------------------------------------------------------------------
 	% BACKGROUND
 	%----------------------------------------------------------------------------
 	\section{Background}
-		
+	
+	
 	CERN\cite{cern_about} is a nuclear research organization that hosts the world's largest particle accelerator\cite{lhc_desc}. The accelerator is a circular tube, with a circumference of about 27km. Batches of protons are circulating in both directions, with the opposite directions intersecting at a few points, giving possibility for the proton beams to collide. This thesis project is focused on the software that processes the data collected during the collisions for the LHCb\cite{lchb_desc} experiment.
 	
 	\vspace{0.7pc}
-	The amount of data generated for collisions is huge, however, only a small fraction of events are worth storing for further investigation. The purpose of the so-called \textit{trigger software} is to process the data in real-time to filter for interesting events.
-	The filtering happens in several steps. Initially fast dedicated hardware electronics collect the data from the detector and build so called raw events. These are then decoded and analyzed in a large farm of standard servers where particles trajectories are reconstructed and analyzed in order to decide whether the event is worth recording or not based on characteristics such as momentum and type of tracks. This process will happen at a rate of 30MHz from 2021 on, leaving only 30us on average for each event reconstruction. Computations are distributed across 1000 nodes.
+	The amount of data generated for collisions is huge, however, only a small fraction of events are worth storing for further investigation. The purpose of the so-called \textit{trigger software} is to process the data in real-time to filter for interesting events, which are further processed offline.
 	
+	\vspace{0.7pc}
 	\color{blue}
-	So 40-100 cores for now, but operational work will be on 1000 cores?
+	Fast dedicated hardware electronics collect the data from the detector and build so called raw events. These are then decoded and analyzed in multiple stages on a large farm of standard servers. Particle trajectories are reconstructed and analyzed in order to decide whether the event is worth recording based on characteristics such as momentum and type of tracks. This process will happen at a rate of 30MHz from 2021 on, leaving only 30us on average for each event reconstruction. The server farm consists of 1000 nodes, each node having 40-100 CPU cores, which puts the scale of the challenge into perspective.
 	\color{black}
-	
-	
+		
 	\vspace{0.7pc}	
 	As the main code is dating from early 2000s, the underlying framework itself (named Gaudi) was not prepared for such workload and environment. A lot of effort has been put into modernizing it in the past years but the performance is not satisfactory yet. The goal is to achieve a 3 times speedup of the code compared to its current state. (This means a 6 times speedup compared to the code before modernization.)
 	
 	\vspace{0.7pc}
-	In order to achieve this ambitious goal, the current software of the LHCb experiment needs to be revamped to take full advantage of modern processor features. Many core systems, low level parallelization, SIMD vectorization and efficiently utilizing superscalar architectures are of particular interest.
-	
+	In order to achieve this ambitious goal, the current software of the LHCb experiment needs to be revamped to take full advantage of modern processor features. Many core systems, low level parallelization, SIMD vectorization and efficiently utilizing superscalar architectures are of particular interest.	
 	
 	\vspace{0.7pc}
 	Failure to deliver required performance improvements would mean that the number of interesting events reaching the offline analysis stage would be reduced, limiting the physics potential of the overall experiment.	
@@ -73,11 +71,8 @@
 	\newpage
 	\section{Description of the task}
 	
-	The bulk of the thesis project is to participate in the optimization of the trigger code, which needs to be able to efficiently run on many-core systems (40 to 100+ cores) of Intel/AMD processors on a recent Linux distribution. Given the large number of events, the focus is not so much on introducing parallelism itself, but on making it efficient by using appropriate data structures and data organization.
-	
 	\color{blue}
-	We work on both level 1 \& level 2 of the trigger system. Is this important to include? \\
-	Is L1 the HW electronics and L2 the distributed system, or the distributed system has multiple levels?
+	The thesis project is focused on optimizing the code running on an individual node of the compute cluster to fully utilize resources available on the node. Nodes host 40-100 modern AMD/Intel CPUs, run a recent Linux distribution, and operate independently of each other.
 	\color{black}
 	
 	\vspace{1pc}
@@ -96,7 +91,7 @@
 	%----------------------------------------------------------------------------
 	% METHODS
 	%----------------------------------------------------------------------------
-	\newpage
+	%\newpage
 	\section{Methods}
 	
 	Programming environment:
@@ -131,11 +126,11 @@
 	\section{Relevant courses}
 	
 	\begin{itemize}
-		\item \href{http://www.uu.se/en/admissions/master/selma/kursplan/?kpid=31898&type=1}
-			{Parallel and Distributed Computing}
-		
 		\item \href{http://www.uu.se/en/admissions/master/selma/kursplan/?kpid=31897&lasar=18%2F19&typ=1}
 			{High Performance Programming}	
+		
+		\item \href{http://www.uu.se/en/admissions/master/selma/kursplan/?kpid=31898&type=1}
+			{Parallel and Distributed Computing}
 	\end{itemize}
 
 
@@ -150,8 +145,17 @@
 	%----------------------------------------------------------------------------
 	\section{Delimitations}
 
-	The work is solely focused on delivering CPU computing optimizations. As such, GPU computations are out of scope, and so is the development of new physics algorithms.
+	\color{blue}
+	The work is solely focused on delivering CPU computing optimizations inside a single node. 
 	
+	As such
+	\begin{itemize}
+		\item GPU processing,
+		\item developing new physics algorithms,
+		\item and distributing the workload across the 1000 nodes
+	\end{itemize}
+	is out of scope of this project.
+	\color{black}
 
 
 	%----------------------------------------------------------------------------
@@ -177,7 +181,7 @@
 			\url{https://home.cern/about}
 		\bibitem{lhc_desc} About the Large Hadron Collider: \\
 			\url{https://home.cern/topics/large-hadron-collider}
-		\bibitem{lchb_desc} About the Large Hadron Collider beaty experiment: \\
+		\bibitem{lchb_desc} About the Large Hadron Collider beauty experiment: \\
 			\url{https://home.cern/about/experiments/lhcb}
 	\end{thebibliography}
 
