@@ -51,9 +51,7 @@
 	The amount of data generated for collisions is huge, however, only a small fraction of events are worth storing for further investigation. The purpose of the so-called \textit{trigger software} is to process the data in real-time to filter for interesting events, which are further processed offline.
 	
 	\vspace{0.7pc}
-	\color{blue}
-	Fast dedicated hardware electronics collect the data from the detector and build so called raw events. These are then decoded and analyzed in multiple stages on a large farm of standard servers. Particle trajectories are reconstructed and analyzed in order to decide whether the event is worth recording based on characteristics such as momentum and type of tracks. This process will happen at a rate of 30MHz from 2021 on, leaving only 30us on average for each event reconstruction. The server farm consists of 1000 nodes, each node having 40-100 CPU cores, which puts the scale of the challenge into perspective.
-	\color{black}
+	Fast dedicated hardware electronics collect the data from the detector and build so called raw events. These are then decoded and analyzed in multiple stages on a large farm of standard servers. Particle trajectories are reconstructed and analyzed in order to decide whether the event is worth recording based on characteristics such as momentum and type of tracks. This process will happen at a rate of 30MHz from 2021 on, leaving only around 30us of node time for each event reconstruction on average. The size of the server farm will be in the order of 1000 nodes, each node having 40-100 CPU cores, which puts the scale of the challenge into perspective.
 		
 	\vspace{0.7pc}	
 	As the main code is dating from early 2000s, the underlying framework itself (named Gaudi) was not prepared for such workload and environment. A lot of effort has been put into modernizing it in the past years but the performance is not satisfactory yet. The goal is to achieve a 3 times speedup of the code compared to its current state. (This means a 6 times speedup compared to the code before modernization.)
@@ -71,10 +69,8 @@
 	\newpage
 	\section{Description of the task}
 	
-	\color{blue}
 	The thesis project is focused on optimizing the code running on an individual node of the compute cluster to fully utilize resources available on the node. Nodes host 40-100 modern AMD/Intel CPUs, run a recent Linux distribution, and operate independently of each other.
-	\color{black}
-	
+		
 	\vspace{1pc}
 	The work consists of the following main points:
 	
@@ -145,17 +141,15 @@
 	%----------------------------------------------------------------------------
 	\section{Delimitations}
 
-	\color{blue}
 	The work is solely focused on delivering CPU computing optimizations inside a single node. 
 	
 	As such
 	\begin{itemize}
 		\item GPU processing,
 		\item developing new physics algorithms,
-		\item and distributing the workload across the 1000 nodes
+		\item and distributing the workload across nodes
 	\end{itemize}
 	is out of scope of this project.
-	\color{black}
 
 
 	%----------------------------------------------------------------------------
