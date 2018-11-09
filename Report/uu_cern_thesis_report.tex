@@ -154,6 +154,7 @@
 	
 	
 	\subsection{Overview of the trigger software}
+	\label{intro_algos_overview}
 		
 	\begin{figure}[H]
 		\begin{center}
@@ -184,19 +185,51 @@
 	\section{Choosing optimization targets}
 	
 	\color{red}
-	Explain the choice of initial choice of algorithms, based on the pie chart diagram and logical reasoning of our goals (i.e. what's needed).	
+	Explain the choice of initial choice of algorithms, based on the pie chart diagram and logical reasoning of our goals (i.e. what's needed).
 	\color{black}
+	
+	As mentioned in \ref{intro_algos_overview}, the reconstruction consists of individual algorithms which account for the bulk of the computation. (Scheduling the algorithms and culling decisions account for a much smaller CPU load.) It is straightforward to first start optimizing the algorithms which take the largest chunk of available computing power.
+	
+	\begin{figure}[H]
+		\begin{center}
+			\includegraphics[width=0.6\textwidth]{algo_usage_original_bestphys}
+		\end{center}
+		\caption{Workload split among HLT1 algorithms.}
+		\label{fig_algo_usage_choice}
+	\end{figure}
+
+	Looking at figure \ref{fig_algo_usage_choice}, we can see that the parametrized Kalman fitter takes nearly half the CPU budget, followed by the forward tracking which takes roughly a quarter. Based on this and initial performance profiling of the algorithms for hotspots, I decided to first examine and optimize the Kalman fitter. 
 	
 	%----------------------------------------------------------------------------
 	% === TBD ===
 	%----------------------------------------------------------------------------
 	\section{Parametrized Kalman Fitter}
 	
-	\subsection{Purpose of the fitter}
+	As described in \ref{intro_algos_overview}, the track is reconstructed incrementally, start with velo hits, extended by UT hits and finally adding the FT hits. This process, however, is not so accurate. This manifests itself in the creation of \textit{ghost tracks} and missed tracks, and generally, tracks are only roughly aligned with the hits they were made from. Ghost tracks are tracks that did not exist in the real collision, they are merely artifacts of the reconstruction algorithms. As such, ghost tracks are highly undesirable, but this is where the Kalman fitter comes into play. 
+	The Kalman fitter basically refines the rough tracks that are spit out by preceding algorithms. The state of a particle can be described by its position, direction, and the quotient of its charge and momentum. The Kalman fitter first estimates the particle's state at its birth position based on the Velo hits alone. After that, it extrapolates the state of the particle to the next hit, or in other words, simulates the particle's travel until the next hit using the laws of physics. The new, \textit{predicted} state will have some deviation to the \textit{observed} state (that is, the hit), however, the Kalman fitter can make a mathematically optimal estimate for the true state based on the prediction and observation. The very new optimal state estimate will then be extrapolated to the next hit again, and this repeats for all the hits of the track.
+	As a result, the estimated state or path of the particle aligns more closely with the observed hits. In the case of ghost tracks, we can expect to have large deviations between the optimal estimated states and the observed hits, which could slipped through initial reconstruction algorithms but show up for the fitter. Such tracks are removed from the list of tracks, and that's why fitting is important.	
 	
 	\subsection{Performance profiling for hotspots}
 	
-	\subsection{Eliminating the hotspots}
+	\textcolor{red}{TODO: Add the actual vtune screenshot.}
+	\begin{figure}[H]
+		\begin{center}
+			\includegraphics[width=0.6\textwidth]{algo_usage_original_bestphys}
+		\end{center}
+		\caption{Code hotspots as measured by Intel VTune Amplifier XE.}
+		\label{fig_kalman_vtune_initial}
+	\end{figure}
+	
+	Figure \ref{fig_kalman_vtune_initial} shows what fraction of the CPU time is spent in each individual function of the code. We can nicely see how the theoretical steps of the Kalman fitting map to the functions:
+	\begin{itemize}
+		\item LoadHits: acquires position and measurement error of hits
+		\item PredictState: extrapolates the state to the next hit
+		\item UpdateState: makes an optimal estimate for the true state using the predicted state and the measured hit
+		\item AverageState, ExtrapolateToVertex, etc.: various operations
+	\end{itemize}
+	There is a major and obvious problem however: just acquiring the data on which the computation is done should not take over 50\% of the Kalman fitting, but more like 1\%.	
+	
+	\subsection{Examination of the }
 	
 	\subsection{Evaluation of results}
 		
