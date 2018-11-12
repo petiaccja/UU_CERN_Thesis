@@ -301,6 +301,31 @@ Notice how the IDs are kept: the unfortunate reason for this is that other algor
 \end{figure}
 
 Figure \ref{fig_kalmanfit_simplified_overall_breakdown} shows that with the new data model, the previous CPU hog, LoadHits, has completely disappeared, now accounting only for 2\% of the fitting.
+
+As the parametrized Kalman fitter takes about 47\% of the entire reconstruction sequence, and about 50\% of the fitter's computing load was removed by the above described code changes, we would expect an overall speedup of 31\%. When measured, throughput increases from 4450 events processed per second to about 4850 events/second, or about 9.2\%. As this is way less than the predicted 31\%, the question arises as to where the performance is gone. First of all, three new data members were added to the Track to store the new TrackHits, and nothing has been removed. As Tracks are copied in the code, the three std::vectors also have to be copied, which involves dynamic memory allocation (a well-known performance drag) and memory copying. Second, part of the code that produces the TrackHits from other objects was not removed, but merely moved out of the fitter to other algorithms. The data conversion to TrackHits, along with adding the TrackHits to the vectors and allocating the memory of the vectors adds additional overhead. In order to achieve the projected performance improvements, these issues have to be fixed and optimized.
+
+
+\subsection{Second round of optimisation}
+
+Besides the TrackHits (or IDs), the Track contained three additional dynamically allocated std::vectors, which were filled with valid data but were not necessary from a computing point of view. Removing these data members confirmed the hypothesis by which the additional data members in the track slowed down the algorithm sequence: I observed an increase of 17\% in throughput (on top of the 9.2\%) when removing these members. While this can be regarded as an optimization independent to the fitter itself, it gains back the speed lost with the additional members required by the fitter.
+
+\subsection{Third round of optimisation}
+
+To trade physics quality for performance, event culling decisions can be made earlier in the reconstruction sequence, before fitting. This results in fitting taking a lot smaller part of the entire sequence while other algorithms become more prevalent. My work, although sped the fitting up, slightly slowed other algorithms down. Consequently, the \textit{best physics} case experienced a large increase in throughput, but the \textit{best throughput} case got slightly slowed down. In an attempt to restore the performance of the other algorithms, I had to further analyze performance.
+
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=0.6\textwidth]{algo_usage_original_bestthru}
+	\end{center}
+	\caption{Distribution of CPU time among algorithms in the \textit{best throughput} case with early event culling}
+	\label{fig_algo_usage_original_bestthru}
+\end{figure}
+
+
+Figure \ref{fig_algo_usage_original_bestthru} shows the in the best throughput case, the pixel tracking algorithm takes the most amount of time. This algorithm is responsible for finding particle track stubs from only Velo hits, and was negatively affected by my fitter optimizations. 
+
+
 \vspace{1pc}
 
 TODO:\\
