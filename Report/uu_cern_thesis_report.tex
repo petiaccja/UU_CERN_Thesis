@@ -214,7 +214,7 @@ As a result, the estimated state or path of the particle aligns more closely wit
 
 \begin{figure}[H]
 	\begin{center}
-		\includegraphics[width=0.6\textwidth]{kalmanfit_overall_breakdown}
+		\includegraphics[width=0.9\textwidth]{kalmanfit_overall_breakdown}
 	\end{center}
 	\caption{Hotspots, or which parts of the Kalman fitter takes most of the time. Measured by Intel VTune Amplifier XE. \textcolor{red}{MAYBE add appendix explaining profiling and vtune}.}
 	\label{fig_kalman_vtune_initial}
@@ -249,14 +249,13 @@ As seen, this is a convoluted process, involving an asymptotically unacceptable 
 
 \begin{figure}[H]
 	\begin{center}
-		\includegraphics[width=0.6\textwidth]{kalmanfit_loadhits_breakdown}
+		\includegraphics[width=0.9\textwidth]{kalmanfit_loadhits_breakdown}
 	\end{center}
 	\caption{Breakdown of CPU usage of the LoadHits function}
 	\label{fig_kalmanfit_loadhits_breakdown}
 \end{figure}
 
-Figure \ref{fig_kalmanfit_loadhits_breakdown} clearly shows that the linear searches (std::find\_if) account for the largest part of loading hits, while memory allocation and additional calculations fill the rest. This aligns with the theory based on analysing and understanding the code.
-
+Figure \ref{fig_kalmanfit_loadhits_breakdown} clearly shows an excerpt from the CPU profiler and helps to understand where LoadHits spends its time. The most obvious thing is the std::find\_ifs that take nearly 60\% of the entire time of LoadHits. This corresponds to the linear search among clusters. The rest of the overhead comes from various boilerplate code, clear trends cannot be understood, but the volume of the overhead is seen to be significant.
 
 \subsection{Simplifying the data loading}
 
@@ -294,9 +293,9 @@ Notice how the IDs are kept: the unfortunate reason for this is that other algor
 
 \begin{figure}[H]
 	\begin{center}
-		\includegraphics[width=0.6\textwidth]{kalmanfit_simplified_overall_breakdown}
+		\includegraphics[width=0.9\textwidth]{kalmanfit_simplified_overall_breakdown}
 	\end{center}
-	\caption{Breakdown of the Kalman fitter}
+	\caption{Breakdown of the Kalman fitter after the simplified data loading}
 	\label{fig_kalmanfit_simplified_overall_breakdown}
 \end{figure}
 
@@ -324,6 +323,8 @@ To trade physics quality for performance, event culling decisions can be made ea
 
 
 Figure \ref{fig_algo_usage_original_bestthru} shows the in the best throughput case, the pixel tracking algorithm takes the most amount of time. This algorithm is responsible for finding particle track stubs from only Velo hits, and was negatively affected by my fitter optimizations. 
+
+
 
 
 \vspace{1pc}
