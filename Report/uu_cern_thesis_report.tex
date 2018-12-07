@@ -304,11 +304,11 @@ Figure \ref{fig_kalmanfit_simplified_overall_breakdown} shows that with the new 
 As the parametrized Kalman fitter takes about 47\% of the entire reconstruction sequence, and about 50\% of the fitter's computing load was removed by the above described code changes, we would expect an overall speedup of 31\%. When measured, throughput increases from 4450 events processed per second to about 4850 events/second, or about 9.2\%. As this is way less than the predicted 31\%, the question arises as to where the performance is gone. First of all, three new data members were added to the Track to store the new TrackHits, and nothing has been removed. As Tracks are copied in the code, the three std::vectors also have to be copied, which involves dynamic memory allocation (a well-known performance drag) and memory copying. Second, part of the code that produces the TrackHits from other objects was not removed, but merely moved out of the fitter to other algorithms. The data conversion to TrackHits, along with adding the TrackHits to the vectors and allocating the memory of the vectors adds additional overhead. In order to achieve the projected performance improvements, these issues have to be fixed and optimized.
 
 
-\subsection{Second round of optimisation}
+\subsection{High level optimizations}
 
 Besides the TrackHits (or IDs), the Track contained three additional dynamically allocated std::vectors, which were filled with valid data but were not necessary from a computing point of view. Removing these data members confirmed the hypothesis by which the additional data members in the track slowed down the algorithm sequence: I observed an increase of 17\% in throughput (on top of the 9.2\%) when removing these members. While this can be regarded as an optimization independent to the fitter itself, it gains back the speed lost with the additional members required by the fitter.
 
-\subsection{Third round of optimisation}
+\subsection{Micro-optimizations}
 
 To trade physics quality for performance, event culling decisions can be made earlier in the reconstruction sequence, before fitting. This results in fitting taking a lot smaller part of the entire sequence while other algorithms become more prevalent. My work, although sped the fitting up, slightly slowed other algorithms down. Consequently, the \textit{best physics} case experienced a large increase in throughput, but the \textit{best throughput} case got slightly slowed down. In an attempt to restore the performance of the other algorithms, I had to further analyze performance.
 
@@ -322,18 +322,85 @@ To trade physics quality for performance, event culling decisions can be made ea
 \end{figure}
 
 
-Figure \ref{fig_algo_usage_original_bestthru} shows the in the best throughput case, the pixel tracking algorithm takes the most amount of time. This algorithm is responsible for finding particle track stubs from only Velo hits, and was negatively affected by my fitter optimizations. 
+Figure \ref{fig_algo_usage_original_bestthru} shows the in the best throughput case, the pixel tracking algorithm takes the most amount of time. This algorithm is responsible for finding particle track stubs from only Velo hits, and was negatively affected by my fitter optimizations.
+
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=0.9\textwidth]{kalmanfit_disasm_opt_src_naive}
+	\end{center}
+	\begin{center}
+		\includegraphics[width=0.9\textwidth]{kalmanfit_disasm_opt_asm_naive}
+	\end{center}
+	\caption{Code snippet from the profiler which shows the code I added to the pixel tracking algorithms in blue highlight. The upper image shows the C++ source code, the lower image shows the corresponding x86-64 disassembly.}
+	\label{fig_kalman_disasm_src_naive}
+\end{figure}
+
+Looking at the disassembly, we can see two \textit{CALL} instructions, which correspond to the two function calls \textit{MakeFitterHit} and \textit{emplace\_back}. This means that the functions haven't been inlined. Inlining[\textcolor{green}{ref}] is a complex topic, because it can make code faster by removing function prologues[\textcolor{green}{ref}], but excessive inlining can also make code slower by polluting the instruction caches with two many repeated code snippets. In this case, the latter is unlikely, since these function are only present at this location, so inlining would be preferable.
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=0.9\textwidth]{kalmanfit_disasm_opt_src_inlined}
+	\end{center}
+	\begin{center}
+		\includegraphics[width=0.9\textwidth]{kalmanfit_disasm_opt_asm_inlined}
+	\end{center}
+	\caption{Source code and disassembly after manually inlining \textit{MakeFitterHit} inside the \textit{for} loop.}
+	\label{fig_kalman_disasm_src_inlined}
+\end{figure}
+
+As can be seen on figure \ref{fig_kalman_disasm_src_inlined}, both \textit{CALL} instruction have disappeared. The first one for \textit{MakeFitterHit} due to the manual inlining, and the second for \text{emplace\_back} because of the compiler automatically inlining it. Note that the automatic inlining was enabled by passing the constructor arguments of \textit{TrackHit} to \textit{emplace\_back} instead of the ready object, exactly as \textit{emplace\_back} was meant to be used. Now, theoretically, the compiler could optimize out both cases as their semantics are equivalent, but it is apparently not capable of doing so.
+
+Besides the absence of function calls, there is another thing noticeable on the assembly instruction. There is a large number of instructions moving quad words (\textit{MOVSD}), that is 64 bit double precision numbers. Furthermore, the \textit{CVTSS2SD} instructions are converting 32 bit single precision numbers to 64 bit doubles. Looking at the source code, we can indeed notice that input data from which the \textit{TrackHit} is made is stored as single precision floats, but the \textit{TrackHits} themselves are double precision because the fitter is using double precision calculations. Changing \textit{TrackHit} to store single floats as well, thus delaying the conversion, will hurt performance at another place where it has less of an impact.
+
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=0.9\textwidth]{kalmanfit_disasm_opt_asm_nocvt}
+	\end{center}
+	\caption{Disassembly after changing \textit{TrackHits} to store single floats.}
+	\label{fig_kalman_disasm_src_nocvt}
+\end{figure}
+
+
+The disassembly on figure \ref{fig_kalman_disasm_src_nocvt} clearly shows that the single precision to double precision conversions are gone just like the \textit{PXOR} instructions, and now it only moves double word memory units. With this little change, I managed to throw out lots of unnecessary instruction and the amount of memory moved around is also smaller.
+
+Due to the complex interactions inside modern, pipelined CPUs and between the CPU, the DRAM and caches, it is hard to explain how and why the changes affected the performance. Nevertheless, inlining and trimming the assembly code has increased performance of the \textit{best throughput} scenario with early event culling from 13300 events per second to around 13700. Notably, the basic case without my code changes has produced about 14500 events per second. \small (As measured with my development branch on our performance test machines during development.) \normalsize
 
 
 
+\subsection{Results, conclusion}
 
-\vspace{1pc}
+I managed to significantly increase the throughput of the \textit{best physics} case from 4450 events per second to 5870 events per second, or a 32\% increase. Unfortunately, the \textit{best throughput} case slowed down from 14500 events/sec to about 13700, or 5\% decrease in throughput.
 
-TODO:\\
-yeah, cool, should get like 130 percent scaling!\\
-but we only get 109.2\% so WTF? \\
-bastard memory allocations to blame as usual \\
-add some shit about disassembly and fp32 to fp64 conversion so i sound smart
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=0.7\textwidth]{kalmanfit_throughput_results_lowquality}
+	\end{center}
+	\caption{Throughput of the particle path reconstruction before and after my modifications, for the \textit{best physics} and \textit{best throughput} cases.}
+	\label{fig_kalmanfit_results_throughput}
+\end{figure}
+
+Another interesting figure to look at is how the weight of the parameterized Kalman fitter in the entire algorithm sequence has changed. Previously, it took 47\% of the whole sequence, and now it only takes 22\%. If in addition the fact that the whole sequence is significantly faster is factored in, the fitter is well above two times faster. \small (These type of measurements are to be taken with a grain of salt because of complex system interactions and the consequent inaccuracy of profiling, but are interesting and provide a good general view.) \normalsize
+
+\begin{figure}[H]
+	\centering
+	\begin{subfigure}{.5\textwidth}
+		\centering
+		\includegraphics[width=.9\linewidth]{algo_usage_original_bestphys}
+		\caption{Before optimizations}
+	\end{subfigure}%
+	\begin{subfigure}{.5\textwidth}
+		\centering
+		\includegraphics[width=.9\linewidth]{algo_usage_optkalman_bestphys}
+		\caption{After optimizations}
+	\end{subfigure}
+	\caption{The distribution of processor time requirements of each algorithms. The parameterized Kalman fitter is identified by the label \textit{ForwardFitterAlgParamFast}.}
+	\label{fig_kalmanfit_results_algousage}
+\end{figure}
+
+In light of the code changes and their effect on the overall performance, we can safely say that code should strive to do the data transformations in the simplest possible way. Adding extra layers on top, if not done carefully using zero-cost abstractions, will dramatically slow the code down. In performance critical applications, a good data oriented design can give far better benefits that assembly-level micro-optimizations. Additionally, a good data structures opens up the doors to more effective micro-optimizations, such as vectorization[\textcolor{green}{ref}].
+
 
 
 
