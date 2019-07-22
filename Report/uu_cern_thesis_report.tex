@@ -89,6 +89,44 @@ problem: \\
 CERN (European Organization for Nuclear Research) is an international high energy experimental physics research organization situated near Geneva, on the Franco-Swiss border. CERN is host to the world's largest particle accelerator and numerous experiments which aim to provide a better understanding of the universe. The goals of the experiments, among others, are to verify the standard model of particles. \textcolor{cyan}{TODO: list more concrete goals}.
 \cite{cern_about}
 
+\subsection{What are particle accelerators}
+
+\subsubsection{Idea and purpose of accelerators}
+Particle accelerators, as the name suggests, accelerate charged particles to extremely high velocities. Generally, the accelerated particles are elementary particles, such as protons or electrons, or ions. CERN mainly operates with protons and lead ions, though we can see other particles as well. The velocity of the particles often approaches that of the speed of light in vacuum. CERN's first particle accelerator, the Synchrocyclotron, reached about 80\% of the speed of light, whereas CERN's largest accelerator's, the LHC, accelerates its protons to 99.9999991\% \cite{lhc_facts_and_figures} of the speed of light.
+
+The high-speed particles are made to collide with a stationary target or each other (particles of opposing directions having a frontal collision), which results in a shower of new-born particles flying away from the collision point. In high-energy collisions, exotic particles that are normally not seen are born, and their properties can be examined to advance the scientific field of particle physics.
+
+\subsubsection{Theory of operation}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=0.5\textwidth]{particle_accelerator_schematic}
+	\end{center}
+	\caption{Simplified schematic of a circular particle accelerator with the crucial functional parts labeled.}
+	\label{fig_part_acceL_schematic}
+\end{figure}
+
+Particle accelerators can be circular or linear. Figure \ref{fig_part_acceL_schematic} depicts a circular accelerator, which consists of the following parts:
+\begin{itemize}
+	\item Evacuated tube (beam pipe): a closed, circular tube in which the particles can travel. To avoid the particles colliding with air particles, it is strictly under vacuum.
+	\item Particle source: injects the particles into the beam pipe. For proton accelerators, a bottle of hydrogen serves as the source. The hydrogen atoms are ionized, and then linearly accelerated by an electric field before entering the circular beam pipe.
+	\item Accelerating cavity: uses oscillating electromagnetic fields which are timed correctly to provide a push to the charged particles via electric force, accelerating them.
+	\item Deflecting magnet: using the Lorentz-force, a strong magnetic field steers the particles inwards to the center of the circle, keeping it on the circular trajectory.
+	\item Extraction pipe: once the particles are fast enough, they are extracted from the circular beam pipe to collide with a stationary target.
+\end{itemize}
+
+The particle is at first injected to the beam pipe at a low energy. Thanks to the deflecting magnets, it keeps revolving in the beam pipe for thousand of revolutions. Each turn, particles get boosted by the accelerating cavities as they pass by, increasing their energy. As the energy increases, deflecting magnets have to work more with stronger fields to keep them on track. When particles reach their maximum energy, which is determined by the construction and size of the accelerator, they are extracted from the beam pipe to collide with a stationary target.
+
+In fact, it is not individual particles that revolve around the accelerator, rather, it's a swarm of thousands or millions of particles distributed throughout the entire circle, forming a so called beam. The distribution, however, is not continuous. The particles group into \textit{bunches} which are equally spaced throughout the circle. The LHC contains 2808 bunches, each consisting of $1.15\cdot10^{11}$ protons.
+
+In addition to deflecting magnets, accelerators also employ \textit{focusing magnets}. Their purpose is to squeeze the bunches in the directions perpendicular to the particles' velocity, resulting in the beam having a smaller cross-section. Without focusing magnets, the bunches would slowly disintegrate and the particles would hit the wall of the beam pipe.
+
+Linear accelerators contain the same functional elements as circular ones, except for the fact that they don't need deflecting magnets since the particles travel in a straight path.
+
+\subsubsection{Particle colliders}
+
+As opposed to particle accelerators, colliders operate with two beams at the same time. A circular collider, such as the LHC, has two beam pipes right next to each other in the circular tunnel. The two beams circle in the opposing directions. At some specific points, the two beam pipes are made to cross, and as the particle beams intersect, the bunches collide with each other as opposed to colliding with a fixed target.
+
 
 \subsection{The accelerator complex \cite{cern_accel_complex}}
 
@@ -98,41 +136,83 @@ CERN (European Organization for Nuclear Research) is an international high energ
 	\label{fig_accel_complex}
 \end{figure}
 
-While CERN is mostly known for its Large Hadron Collider (LHC) which this thesis is concerned with, it is home to many more particle accelerators. These accelerators are useful on their own, but from the perspective of the LHC they are used to provide high energy protons that the LHC can further accelerate. Too low energy protons cannot be directly accepted into the LHC, so a sequence of progressively larger accelerators bump the energies up in steps. When a particular accelerator reached its top energy, its beam is simply transferred to a bigger one, finally getting injected into LHC.
+As seen on \ref{fig_accel_complex}, CERN has a quite complex system of particle accelerators. We can see several circular and linear accelerators, and also some deccelerators, all of which are running at the same time in a synchronized fashion so that they can interact with each-other.
 
-The LHC is CERN's largest machine. It can be found inside a circular underground tunnel of a circumference of 27km. There are two accelerators inside the tunnel which accelerate protons so that there is one beam clockwise and another counter-clockwise. Protons are not equally distributed in the beams as they circle around, rather, they can be found in many equally spaced \textit{bunches}.
+The largest circle, in dark blue, is LHC, which is the world's largest and most powerful particle collider to date. The way protons reach their final energy in the LHC is a complex, multi-stage process. The protons are sourced from a bottle of hydrogen, and injected into LEIR via LINAC 3. When the energy of the protons reaches the maximum operating point of LEIR, they are transferred into PS for further boosting. When they reach PS's operating maximum, they are transferred into SPS, and finally into the LHC.
 
-At specific points along the circle of the LHC, the two beams of opposing directions are made to cross each other's path. As two bunches go through the crossing point at the same time and the individual protons collide\cite{lhc_bunch_collisions}. Since each proton carries around 7 TeV of energy, the collision's yield is about 14 TeV. In the collision, other particles might be born, and that's exactly what scientists are looking forward to analyze.	
+Inside the LHC, we can find two beams going in the opposite directions. The energy of each particle reaches about 7 TeVs at maximum. The two beams cross each other and particles collide at 4 points, marked CMS, ALICE, LHCb and ATLAS. At these points, complex particle detectors are installed to analyze the collisions. Detectors track the path of the particles, and make measurements on their properties such as momentum, charge and mass. From the collection of properties, particles can be identified. Measurements provide valuable data to physicists who are trying to verify and extend the standard model of particles. In most cases, the raw data provided by the detectors is processed by software.
 
-
-\subsection{Experiments on LHC}
-
-As seen on figure \ref{fig_accel_complex}, the four main experiments dedicated to analyze LHC collisions are ATLAS, CMS, ALICE and LHCb. Consequently, these experiments have huge underground rooms around the collisions points, where they can fit their instruments.
-
-The instruments are meant to track and identify particles created in the collisions, and are thus called particle \textit{detectors}. The type and properties of particles created in the collisions provide valuable data to physicists who are trying to verify and extend the standard model of particles. In most cases, the raw data provided by the detectors is processed by software, which does the tracking and identification.
-
-
-\subsection{LHCb's detector}
+\subsection{LHCb experiment's detector}
 	
+\subsubsection{Construction of the detector}
+
 \begin{figure}[H]
 	\includegraphics[width=\textwidth]{lhcb_geometry_upgrade}
 	\caption{Side view of the LHCb detector.}
 	\label{fig_lhcb_geometry}
 \end{figure}
 
-Figure \ref{fig_lhcb_geometry} shows the LHCb detector from the side, which means that the two beams of LHC are going in horizontal directions on the drawing through the middle of the detector. The middle of the detector coincides with the horizontal axis of symmetry.
+Figure \ref{fig_lhcb_geometry} shows the LHCb detector from the side, which means that the two beams of LHC are going in horizontal directions on the drawing through the middle of the detector. The beam pipe coincides with the horizontal axis of symmetry of the detector.
 
-As seen on the labels, the detector consists of multiple layers of sub-detectors. Each layer has a hole in the center to let the beam pipes through. The two particle beams cross each other inside the Vertex Locator (VELO, at the right in yellow).
+As seen on the labels, the detector consists of multiple layers of sub-detectors. Each layer has a hole in the center to let the beam pipes through. The two particle beams cross each other inside the Vertex Locator (VELO, at the right in yellow). As opposed to most other detectors, this one only analyzes the products of the collision in a narrow cone away from the VELO. The parts from RICH to M5 could be mirrored around the VELO to have two cones that touch each other by the tip, however it is not done for financial reasons.
 
-While full reconstruction uses all sub-detectors, real-time reconstruction only uses the VELO, the UT (in orange, left of VELO) and the FT (SciFi Tracker, in the middle in orange). Let's follow the life of a particle from its birth inside the VELO. While flying away from the collision point, it first crosses multiple layers of the VELO. Each layer consists of many pixels, and whenever the particle touches a pixel, the VELO forwards this information to the software. Eventually, the particle leaves the VELO and goes through the UT. The UT has a different mechanism compared to the VELO, but essentially it also records if a particle has gone through one of its layers. Leaving the UT, the particle goes through the large magnet, where its path is bent due to the Lorentz force by an amount dependent on its electric charge and momentum. The particle then keeps going straight through the FT, where its location is registered as usual. Note that for each bunch collision, hundreds of new particles go through the detector as described above. The reconstruction software tries to make sense out of the large number of registered particle positions by using knowledge about the magnetic field, and eventually identifies the individual particles and their tracks.
+The goal of the LHCb detector is the same as for all other detectors: reconstruct the paths and types of the particles. Even though full reconstruction uses all sub-detectors, we are only interested in partial reconstruction that can be done in real-time. This only involves the VELO, the UT (in orange, left of VELO) and the FT (SciFi Tracker, in the middle in orange).
 
-The purpose of real-time (sometimes called \textit{online}) reconstruction is to determine what data to store. Most collision events are not interesting at all from a physics perspective, and only a small fraction is kept for long-term storage. Storing all data would be unfeasible because of its sheer amount. The software doing the online reconstruction and selection is called the \textit{trigger}.
+\subsubsection{Operating principles}
 
-\subsection{The 2018/19 upgrade of LHCb}
+\begin{figure}[H]
+	\includegraphics[width=\textwidth]{lbevent_collision_example}
+	\caption{Particles created in a real collision and their interaction with the detector.}
+	\label{fig_lhcb_lbevent_collision}
+\end{figure}
 
-The catch with the above described detector is that it does not really exist yet. The LHC will be shut down in 2018 december for maintenance, and that's when the LHCb collaboration will upgrade its detector to the one above. (The current detector is similar in construction, that's why it's referred to as \textit{upgrade}.)
 
-With the upgrade, software data processing will change significantly as well. Around 30 million bunch collision events occur every second, each of which go through the trigger. With the current detector, triggering is first done by hardware electronics, selecting only 1 million events per second, which are then further culled on a big server farm by software written in C++. After the upgrade, the hardware trigger is dropped and the entire trigger runs in software. This puts the high requirement on the software trigger to reconstruct and cull all the 30 million events every second.
+Figure \ref{fig_lhcb_lbevent_collision} shows one particle collision event's results. The particles that were born in the collision are shown by the orange lines. The three aforementioned detectors, the VELO, UT and FT, can be identified by the origin of the orange particles, the pink cloud of lines and the bright blue cloud lines, respectively. The green and yellow cubic illustrations on the far-end of the detector belong to other sub-detectors, and are out of the scope of this paper.
+
+The VELO is a small detector, measures less than a meter in length. It is a silicon pixel detector, which looks much like a modern CCD camera: a rectangular array of pixels which detect light (or in this case, particles) that hit it. The difference is that particle detectors don't absorb the particle, rather, it passes through largely undisturbed. Additionally, the VELO consists of 26 such CCD-like rectangles, instead of just one.
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=0.5\textwidth]{detector_velo_real}
+	\end{center}
+	\caption{The 26 layers of the VELO. The pixels reside on the silver area, the PCB around contains the reading electronics, and the wedge at the top-center of the silver area corresponds to the beam pipe.}
+	\label{fig_detector_velo_real}
+\end{figure}
+
+As opposed to the VELO, the UT is a silicon strip detector. Silicon strips detectors consist of not pixels, but from long fibers which act much like a pixel in the sense they also signal if a particle passes through them. A fiber of the UT is generally 10 centimeters long, and has a width of only 192 micrometers. This means that while on one axis, the particles position can be told with great accuracy, on the other axis the uncertainty if 10 centimeters. The entire detector measures about 1.7 meters in width and 1.4 meter in height.
+
+Similarly to the UT, the FT is also a silicon strip detector, but the length of it's fibers is 2.5 meters. This means the 5 meter tall detector needs only two fibers to cover the full height.
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=0.5\textwidth]{detector_ut_ft_drawing}
+	\end{center}
+	\caption{The UT in purple and the FT in blue, with a person next to them to illustrate the scale. The silicon strips are aligned vertically, leading to a good horizontal resolution but a poor vertical resolution.}
+	\label{fig_detector_ut_ft_drawing}
+\end{figure}
+
+In between the UT and the FT, a strong magnet is placed which bends the particles on the horizontal axis.
+
+When a collision occurs, the particles follow a straight path and they are recorded passing through the pixels of the VELO. Initial particle trajectories can be reconstructed by finding hits in the VELO that align to form a straight line. These paths are then linearly extrapolated through the UT, and some of the silicon strips that were lit up by the particles are assigned to the initial trajectories acquired from the VELO. Inside the UT, particles paths are mostly straight, but they already experience a slight bending due to the magnet after the UT. From the amount of bending, the particle's momentum can be estimated. As the charged particles pass through the magnet, their trajectory bends, however, the amount of bending is a function of the particle's momentum. With a good momentum estimate, a guess can be given as to where the particle would hit the FT. In the suspected region, the silicon strips of the FT are searched and if the corresponding fibers are found, they are assigned to the particle.
+
+At the end of the process, the all the pixels or fibers that were touched by a particle are known, which makes it possible to know the exact path of the particle. The amount of bending from the UT to the FT allows the calculation of the momentum, which, when paired with information from other detectors, such as energy and velocity, makes it possible to identify a particle. (Identification means knowing the name of the particle, such as electron or muon.)
+
+\subsection{Events and triggering}
+
+\subsubsection{Collision events}
+
+As explained earlier, the LHC has 2808 bunches of protons circulating in both directions in the two beam pipes. We refer to the collision of the of these bunches as an \textit{event}. Events are completely independent, that is, a bunch-bunch collision only happens after the previous collision's products have been analyzed and flushed from the detector. At nearly the speed of light, a particle takes 89 microseconds to do a revolution in the circular detector of 26 659 m circumference. The 2808 bunches are however spaced at a distance of 25 nanoseconds from each-other, giving way to at most 40 million collisions every second. Calculating with 2808 bunches and 89 microseconds, the bunch spacing should be 31.7 nanoseconds. There are, however, some longer gaps in the line of 2808 bunches, so two adjacent bunches are still 25 nanoseconds away. This is why, in practice, there are only roughly 30 million collisions a second, but the processing of that has to happen as fast as 40 million a second.
+
+\subsubsection{Real-time reconstruction and triggering}
+
+Most of the 30 million events that occur every second are absolutely uninteresting, with no exotic particles of interest being created. On the other hand, each event amounts to a significant amount of data which is a challenge to store. To reduce the amount of data to be stored, each event is processed in real-time to determine weather it is interesting or not. Uninteresting events are simply dropped, the interesting ones go to long-term storage for further analysis. The act of deciding if an event has to be stored is called \textit{triggering}. The real-time processing of events is a simplified method that relies on the VELO, UT and FT detectors as described previously.
+
+
+\subsection{The 2019/20 upgrade of LHCb}
+
+The LHC shuts down for maintenance for two years from the end of 2018. The LHCb detector also undergoes maintenance and upgrade during that time, where the VELO is upgraded and the old TT is entirely replaced by the UT.
+
+The pre-upgrade detector does the real-time event processing in two stages. The first stage employs FPGAs to do a preselection, which cuts down the 30 million events per second to roughly 1 million per second. The second stage uses a large farm of CPUs to do finer reconstruction and final trigger decision. During the upgrade, however, the FPGAs will be retired, and the CPU farm has to take the whole load of 30 million events per second. This puts a stress on the software stack that it was not written to handle, and needs a significant overhaul.
 
 \begin{figure}[H]
 	\centering
@@ -153,7 +233,7 @@ With the upgrade, software data processing will change significantly as well. Ar
 \end{figure}
 
 
-\subsection{Overview of the trigger software}
+\subsection{Overview of the real-time processing software}
 \label{intro_algos_overview}
 	
 \begin{figure}[H]
@@ -164,9 +244,15 @@ With the upgrade, software data processing will change significantly as well. Ar
 	\label{fig_algorithms_brunel}
 \end{figure}
 
+The real-time processing software consists of algorithms which do a specific piece of the reconstruction of the particle paths. In addition to the reconstruction, there are other algorithms which do the selection of interesting events. Since the selection algorithms are generally a lot faster than reconstruction algorithms, they are excluded them from this discussion.
 
-The trigger software is basically the online reconstruction code and additional logic to select which events to keep. The online reconstruction software can be broken down to individual pieces referred to as \textit{algorithms}, each of which serves a specific purpose. First of all, the highly compressed data that arrives from the detector has to be decoded to acquire hits that describe the position and measurement error of points where a particle has been seen. Second, the particles' tracks are progressively reconstructed by starting from the collision point in the VELO, and appending hits to an existing track. In the VELO and UT, we are looking for hits that form a straight line, and we try to match this straight track to another similarly straight track inside the FT. Finally, the track goes through fitting, which tries to modify the existing rough track to more closely line up with the hits it was produced from.
+The general principle behind reconstruction is that a list of hits (where a pixel or silicon strip was hit) are given, and regular alignment of the hits indicate the path of the particle: hence the name \textit{pattern recognition}. Once all particles have been found by gathering the hits they created, they can be identified and fed into the selection decision making.
 
+The information on which pixels and strips were hit comes straight from the detectors, in a heavily compressed binary format. It has to be first decoded to give the position of the individual strips, a process done by the \textbf{VELO decoder}, \textbf{UT decoder} and \textbf{FT decoder}.
+
+Once pixel hit positions are known by their global X,Y,Z coordinates, the \textbf{VELO tracker} find hits that align to form a straight line. It estimates the starting position and the slope of the line. The line is extended into the UT, where the \textbf{VELO-UT tracker} searches silicon strip hits that are very close to the extended line. From the slight offset of the strip hits from the extended line, the VELO-UT tracker can estimate the amount of bending in the magnetic space, thus the momentum of the particle. The last step of tracking is done by the \textbf{forward tracker}, which uses the momentum estimate to extrapolate the bent path of the particle through the magnet, to the layers of the FT. It then finds silicon strips of the FT which align into a straight line (no magnetic field in the FT either), the line having the right direction and position to be a possible path the particle took after going through the magnet.
+
+Finally, the \textbf{fitter} uses all the hits to align the particles path more closely with the position of the hits. In principle, it works similarly to a curve fitting solution, but uses a Kalman filter internally. Having the most accurate path, the decision is made to keep or drop the event.
 
 \subsection{The aim of this thesis project}
 
@@ -207,7 +293,7 @@ Looking at figure \ref{fig_algo_usage_choice}, we can see that the parametrized 
 
 As described in \ref{intro_algos_overview}, the track is reconstructed incrementally, start with velo hits, extended by UT hits and finally adding the FT hits. This process, however, is not so accurate. This manifests itself in the creation of \textit{ghost tracks} and missed tracks, and generally, tracks are only roughly aligned with the hits they were made from. Ghost tracks are tracks that did not exist in the real collision, they are merely artifacts of the reconstruction algorithms. As such, ghost tracks are highly undesirable, but this is where the Kalman fitter comes into play. 
 The Kalman fitter basically refines the rough tracks that are spit out by preceding algorithms. The state of a particle can be described by its position, direction, and the quotient of its charge and momentum. The Kalman fitter first estimates the particle's state at its birth position based on the Velo hits alone. After that, it extrapolates the state of the particle to the next hit, or in other words, simulates the particle's travel until the next hit using the laws of physics. The new, \textit{predicted} state will have some deviation to the \textit{observed} state (that is, the hit), however, the Kalman fitter can make a mathematically optimal estimate for the true state based on the prediction and observation. The very new optimal state estimate will then be extrapolated to the next hit again, and this repeats for all the hits of the track.
-As a result, the estimated state or path of the particle aligns more closely with the observed hits. In the case of ghost tracks, we can expect to have large deviations between the optimal estimated states and the observed hits, which could slipped through initial reconstruction algorithms but show up for the fitter. Such tracks are removed from the list of tracks, and that's why fitting is important.	
+As a result, the estimated state or path of the particle aligns more closely with the observed hits. In the case of ghost tracks, we can expect to have large deviations between the optimal estimated states and the observed hits, which could slipped through initial reconstruction algorithms but show up for the fitter. Such tracks are removed from the list of tracks, and that's why fitting is important.
 
 \subsection{Performance profiling for hotspots in the Kalman fitter}
 
@@ -408,7 +494,16 @@ In light of the code changes and their effect on the overall performance, we can
 %----------------------------------------------------------------------------
 % === TBD ===
 %----------------------------------------------------------------------------
-\section{TBD}
+\section{Streamlining the computation's data model}
+
+
+
+\section{Vectorizing and optimizing the VeloUT algorithm}
+
+
+
+
+
 
 %----------------------------------------------------------------------------
 % === Conclusion ===
@@ -442,7 +537,9 @@ BRIEFLY
 		\url{http://alicematters.web.cern.ch/?q=FAQ-why-lead-ions}
 	\bibitem{lhc_energy} Energy of the LHC: \\
 		\url{https://home.cern/about/engineering/restarting-lhc-why-13-tev}
-	\bibitem{lhc_bunch_collisions} https://lhc-machine-outreach.web.cern.ch/lhc-machine-outreach/collisions.htm
+	\bibitem{lhc_bunch_collisions} 		https://lhc-machine-outreach.web.cern.ch/lhc-machine-outreach/collisions.htm
+	\bibitem{lhc_facts_and_figures}
+	https://public-archive.web.cern.ch/en/LHC/Facts-en.html
 \end{thebibliography}
 
 \end{document}
