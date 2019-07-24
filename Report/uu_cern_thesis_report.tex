@@ -10,6 +10,33 @@
 \usepackage{listingsutf8}
 \usepackage[utf8]{inputenc}
 
+\usepackage{xcolor}
+ 
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+ 
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\fontsize{7}{9}\selectfont\ttfamily,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+\lstset{style=mystyle}
+
 \usepackage[a4paper, total={16cm, 23.7cm}]{geometry}
 \DeclareMathSizes{12}{13}{10}{8}
 \setlength\parindent{0.7cm}
@@ -23,6 +50,8 @@
 \renewcommand{\refname}{}
 
 \captionsetup{width=0.8\textwidth}
+
+\newcommand{\code}[1]{\texttt{#1}}
 
 \fontfamily{phv}
 
@@ -560,37 +589,119 @@ There are on average 2-3 hits returned for each panel. Among these hits, the alg
 
 Each candidate that belongs to a track goes through a fitting stage. This is much like curve fitting or linear regression, the algorithm find a mathematically optimal set of parameters that best describe the path of the particle that have created the UT hits of the candidate. 
 
-\subsection{Selecting the best candidate}
+\subsubsection{Selecting the best candidate}
 
 The error of the fitting of a candidate can be calculated by determining how far the parameterized path of the particle lies from the position of the UT hits it was fitted from. If any of the candidates have a sufficiently low error, the one with the lowest is picked to form the newly created upstream track.
 
 
-\subsection{Implementation and its pitfalls for the original Velo-UT algorithm}
+\subsection{Analysis of the original Velo-UT algorithm}
+
+\subsubsection{Hotspots}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=0.7\textwidth]{velout_hotspots_orig}
+	\end{center}
+	\caption{Resolts of hotspots profiling with Intel VTune.}
+	\label{fig_velout_hotspots_orig}
+\end{figure}
+
+As we can see, the Velo-UT algorithm spends most of its time gathering the UT hits that could potentially belong to a VELO tracks. The second largest portion is \textit{formClusters}, which performs the search for aligned UT hits as well as a preliminary fit to determine the best candidate. The third largest unit is the creation of the output (the \textit{upstream} tracks), which performs a higher quality final fit and does some analysis to remove potentially undesirable tracks.
+
+In light of this, the primary target for improvement is the largest chunk: gathering the hits, however, the other hotspots are also of significant interest.
+
 
 \subsubsection{Gathering hits}
 
-\textcolor{red}{TODO: add picture from profiler}
+Examining the code of the hit gathering function(\ref{lst_velout_gatherhits_original}), we can see that the main idea is to loop over the four planes, extrapolate the track to the plane, and collect the hits for each plane.
 
-The largest part of the Velo-UT algorithm is collecting the hits that belong to a track, which can be seen on figure \textcolor{red}{ref to figure}. Upon closely inspecting the \href{https://gitlab.cern.ch/lhcb/Rec/blob/1b7edc5aea96f2225601238b3f64e478e41b6c70/Pr/PrVeloUT/src/PrVeloUT.cpp#L278}{code}, we can see a complex flow control logic and several calls to distant services.
+The first step in locating the close-by UT hits happens by finding the sectors (that is, the 10-by-10 centimeter sensors) that are adjacent to the point where the extrapolated track hits the current panel. The \code{findSectors} function performs this step via a rather complex logic (which is not shown here).
 
-The algorithm loops over the four panels, extrapolates to track to them, and finds the sensors that fall close to the extrapolated track. In the next step, the algorithm loops over the found sensors, and collects each hit that falls within a certain distance of the extrapolated track.
+Given the sectors of interest, a loop goes over the sectors and queries the list of hits that belong to that sector from the \code{HitHandler}. The \code{HitHandler} already has the UT hits grouped by sectors, so this operation is rather simple.
 
-One issue with this is that there is no need to base the lookup of hits close to a track on sensors, any kind of space partitioning can be used to make it more efficient. Second, the grouping of hits by sensors that is done by the HitHandler, requires the HitHandler to either perform a complete sorting of the hits by their sensor or to receive the hits in a particular order. The former option takes O(nlogn) time, while the latter make the implementation error-prone and fragile to change. Groouping by sensors could be implemented in a robust and efficient manner, but migrating to uniform grid space partitioning seemed like a better solution.
+Finally, the \code{findHits} function loops over the hits that belong to one sector, and keeps the hits that are truly close to the extrapolated track. Truly close here means that the fiber, when fattened into a cylinder, intersects with the line of the extrapolated track. (In reality, a simpler x and y tolerance is used instead of the heavy ray-cylinder intersection calculations.)
 
-\subsubsection{Lack of vectorization}
+The final result is an array which contains four arrays of hits, one for each panel.
 
-The Velo-UT algorithm processes tracks one by one. If, instead, the steps\ref{sec_velout_desc} were executed on all tracks at once, vectorization opportunities could be exploited. Some parts, such as the extrapolation of tracks can be perfectly vectorized, other parts, like gathering the hits are more difficult, while the finding of aligned hits is not feasible at all. With SIMD, 4 to 16 (depending on the CPU ISA) tracks can be extrapolated at the same time instead of just one.
+\vspace{1pc}
 
-\subsubsection{Overcomplicated flow control}
+Looking at the code, we can spot several issues:
+\begin{enumerate}
+	\item Getting the list of nearby sectors is complicated: the sectors do not form a regular grid because of the smaller ones in the middle, which needs to be handled when doing lookups by x,y coordinates.
+	\item Found sectors may be duplicated, as indicated by line 319-320, which is handled by special cases again.
+	\item Early exit conditions to cut computation time on lines 299, 302 and 320.
+\end{enumerate}
 
-\textcolor{red}{do a microarch exploration and attach branching inefficiency profiling}
-The implementation heavily relies on early exit conditions, that is, the code detects early on if the results will be unsatisfactory, and skips the execution of the remaining code. While this seems intuitive to cut computation times back, it may achieve the opposite effect on modern CPUs. Each time a CPU hits a branching point in the code (e.g, if statement), it tries to guess which branch will be chosen, and starts executing the predicted branch before the condition of the if statement is evaluated. If the CPU guessed wrong, it has to unroll the entire branch, and restart the correct one. While the CPU generally makes very accurate predictions, the cost of a misprediction is high, which gives motivation to structure code in a branchless fashion. Additionally, branchless code is easier to vectorize.
+Issues \#1 and \#2 indicate that more work is done than absolutely necessary, while branching caused \#2 and \#3 may directly affect the performance on modern superscalar CPUs with deep pipelining. The idea with early exit conditions is to skip computation that will prove useless, however if the CPU misses the branch prediction, it has to flush its entire pipeline and restart the other branch. It is often a better approach to vectorize the branchless code and do the unnecessary calculations as well, then filter the only the final results (with vectorized code). Overall, the code is not vectorized at all, and does not have data-structures that would allow for vectorization.
 
-\subsubsection{Flawed code design}
+In addition to performance problems, as the code is not clearly structured, optimization opportunities are easy to miss and hard to exploit, for humans and compilers alike.
+
+\begin{figure}[H]
+	\centering
+	\begin{subfigure}{.5\textwidth}
+		\centering
+		\includegraphics[width=.7\linewidth]{velout_gatherhits_orig_uarch}
+		\caption{Microarchitecture usage of gathering\\ hits in the original code}
+		\label{fig:sub1}
+	\end{subfigure}%
+	\begin{subfigure}{.5\textwidth}
+		\centering
+		\includegraphics[width=.7\linewidth]{velout_gatherhits_new_uarch}
+		\caption{Microarchitecture usage of gathering\\ hits in the refurbished code}
+		\label{fig:sub2}
+	\end{subfigure}
+	\caption{Almost 30\% of the instructions go to waste due to CPU branch mispredictions before refurbishing the code. (Illustration, in-depth analysis later.)}
+	\label{fig_velout_branch_example}
+\end{figure}
+
+
+\subsubsection{Finding aligned hits}
+
+The largest part of the hit finding function is in fact the fitting of the alignging track candidates. Fitting is a simple, linear stream of mathematical operation with no branching, thus makes a perfect candidate for vectorization. However, vectorization cannot be exploited unless it is completely separated from the alignment search.
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=0.7\textwidth]{velout_hotspots_orig_formclusters}
+	\end{center}
+	\caption{The breakdown of the aligned hit searching. The two simpleFit calls account for the fitting, while the remaining ~30\% is the alignment search.}
+	\label{fig_velout_hotspots_orig_formclusters}
+\end{figure}
+
+
+\subsubsection{Creating the final track}
+
+The data format of the final track is not optimal. A track is represented by its own class, which dynamically allocates memory for the small number of hits and other objects it has. Transforming the track into a structure of arrays format is something to consider, which means for example that all the hits for all the track would reside in a large array, and the individual tracks would be indices into that array.
+Additionally, as part of the creation of the track, a final, more accurate fit is performed. This is also a prime candidate for vectorization when separated from the rest of the code, and may also be merged with the preliminary fit to provide simpler and faster code, and potentially better results.
+
+\subsubsection{General code design}
 
 The code violates several coding best practices, which is not strictly an optimization problem, but is still an important concern as it is hard to find optimization opportunities in code that is hard to reason about. The most severe breaches are the single responsibility and dependency inversion priciples. An example for the former is \href{https://gitlab.cern.ch/lhcb/Rec/blob/1b7edc5aea96f2225601238b3f64e478e41b6c70/Pr/PrVeloUT/src/PrVeloUT.cpp#L337}{formClusters}, which not only find aligned hits but also parametrically fits them, an example for the latter is \href{https://gitlab.cern.ch/lhcb/Rec/blob/1b7edc5aea96f2225601238b3f64e478e41b6c70/Pr/PrVeloUT/src/PrVeloUT.h#L191}{simpleFit}, which modifies the flow control of its caller (formClusters) via modification of in-out (quasi-global) parameters. When the problems are alleviated, the search for aligned hits and the fitting can be done completely separately, which provides a massive gain thanks to the perfect vectorization of the fitting process.
 
 
+\subsection{Design of the improved algorithm}
+
+\subsubsection{Uniform grid space partitioning}
+
+\subsubsection{Data structures and steps}
+
+\subsubsection{Vectorization of extrapolation and fitting}
+
+\subsubsection{Vectorization of gathering hits}
+
+\subsubsection{No vectorization for hit alignment search}
+
+\subsubsection{Custom memory allocation}
+
+
+\subsection{Results}
+
+\subsubsection{Overall performance}
+
+\subsubsection{Microarchitecture usage, bottlenecks}
+
+\subsubsection{Effects of customized memory allocation}
+
+\subsubsection{Comparison of Clang and GCC}
 
 
 
@@ -633,5 +744,21 @@ BRIEFLY
 	\bibitem{tracker_tdr} Tracker (UT and FT) Technical Design Report: \\
 		\url{https://cds.cern.ch/record/1647400?ln=en}
 \end{thebibliography}
+
+
+%----------------------------------------------------------------------------
+% SCRATCH
+%----------------------------------------------------------------------------
+\newpage
+\section{Scratch}
+
+\lstinputlisting[
+	caption=Hit gathering for the original Velo-UT,
+	label=lst_velout_gatherhits_original,
+	language=C++,
+	firstline=277,
+	lastline=332,
+	firstnumber=277]
+	{source_code/PrVeloUT.cpp}
 
 \end{document}
