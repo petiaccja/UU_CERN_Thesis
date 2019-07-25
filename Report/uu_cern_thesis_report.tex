@@ -682,7 +682,38 @@ The code violates several coding best practices, which is not strictly an optimi
 
 \subsubsection{Uniform grid space partitioning}
 
+For the logic part, I left the algorithm as it was as I could not find better alternatives \textcolor{red}{(maybe explain parabola and hough methods I tried)}, however I redesigned space partitioning from scratch.
+
+Space partitioning, most prominent in 3D graphics and physics simulations, is a technique to accelerate computations that are done on a large number of objects contained in a 3D space. Frequently, there are only significant intereactions between nearby objects, so computations for the interactions of far away objects can be neglected. To be able to quickly list objects nearby to a 3D coordinate, a space partitioning scheme is used. Arguably, the simplest sceheme is uniform grid space partitioning, which slices the 2D or 3D space by a uniform grid, and keeps a list of objects for each grid cell that fall into the cell. This way, to find objects near to a specific point, one only has to calculate the grid cell the point falls in (a few divisions) and read the list of that cell. (In some cases, the nearest four cells can be used not to miss any objects in case the specified point lies close to a grid line.)
+
+To reduce the complexity of finding the nearby sectors of a plane for an extrapolated track, I replaced the sector-based lookup by a uniform grid-based lookup. Since there are 14  rows of sensors on every plane of the UT detector, I used a grid with 14 rows, carefully aligned to the geometrical position of the sensor rows. This ensures that a fiber falls entirely within its grid cell. For the half-height sensors in the middle, two sensors fall into the same grid cell. There are no such limits for the horizontal resolution of the grid cells, so the cell width can be set arbitrarily. As the search region in the order of a few centimeters, I chose to have 64 cells on the horizontal axis, resulting in a cell width of roughly 3 cm. The third axis in the direction of the beamline is divided so that each four panel of the UT falls into its own grid cell. To sum up, the grid is 64 x 14 x 4 cells.
+
+\textcolor{red}{add a figure for space partitioning}
+
+The binning (assignment of cell) of hits is done by taking the middle point of the fiber, and using a division on all three axes to determine the integer coordinates of the corresponding cell.
+Similarly, lookup of hits nearby to a point involves first a similar division to acquire the corresponding cell, then the hits assigned to that cell can be iterated over. One caveat, however, is that the middle two layers are tilted, so some tilted fibers cross multiple cells. In this case, we would like to have them show up when we query either of the cells. Instead of duplicating hits, I chose to simply sample the nearbest two cells instead of just one. With the cell size of 3 centimeters, it is unlikely to miss a hit in such way. The same issues persists in the vertical direction as well when the sampled point falls very close to a grid line. This is exacarbated by the small displacement on the Z axis that the sensors have by design of the hardware, and manufacturing errors also add to the problem. However, by design, there is a small overlap between two adjacent sensors, both on the vertical and horizontal axes. This means that a track hitting a grid line is likely to excite two fibers at the same time. The idea is that even when avoiding double-sampling on the vertical axis, at least one of those fibers will still be registeredd in the subject cells.
+
 \subsubsection{Data structures and steps}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=0.85\textwidth]{velout_opt_datastruct_flow_p1}
+	\end{center}
+	\caption{Data structures and process diagram of the new Velo-UT algorithm. (Part 1)}
+	\label{fig_velout_opt_datastruct_flow_p1}
+\end{figure}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=0.7\textwidth]{velout_opt_datastruct_flow_p2}
+	\end{center}
+	\caption{Data structures and process diagram of the new Velo-UT algorithm. (Part 2)}
+	\label{fig_velout_opt_datastruct_flow_p2}
+\end{figure}
+
+\paragraph{Layout of data}
+
+Figures \ref{fig_velout_opt_datastruct_flow_p1} and \ref{fig_velout_opt_datastruct_flow_p2} 
 
 \subsubsection{Vectorization of extrapolation and fitting}
 
