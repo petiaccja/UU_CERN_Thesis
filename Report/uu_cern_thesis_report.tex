@@ -713,9 +713,37 @@ Similarly, lookup of hits nearby to a point involves first a similar division to
 
 \paragraph{Layout of data}
 
-Figures \ref{fig_velout_opt_datastruct_flow_p1} and \ref{fig_velout_opt_datastruct_flow_p2} 
+Figures \ref{fig_velout_opt_datastruct_flow_p1} and \ref{fig_velout_opt_datastruct_flow_p2} show the main steps of the algorithm as well as the exact data structures passed around. The data structures are structures of arrays (SOA), which are represented by tables on the drawing. Each row correspondonds to a certain variable, while the columns usually represent variables that belong to a certain track. In memory, rows are stored in a contiguous block separate from other rows.
+
+The SOA layout serves three purposes:
+\begin{itemize}
+	\item when reading a row, contiguous memory accesses are dispatched to the CPU, which makes it easy for the prefetcher to get data in the fast caches even before its used,
+	\item for vectorization, operations can be done on multiple columns at the same time without de-interleaving the data,
+	\item reading only a subset of the rows (i.e. only x and y but not z) incurs no waste unlike an AOS layout, where z would be loaded as it's in the same cache line.
+\end{itemize}
+
+Although SOA layouts generally make code harder to read and write, they are crucial to maximally exploit modern CPU architectures in performance critical applications.
+
+\subsubsection{Vectorization of filtering}
+
+The filtering algorithm takes a set of States that describe the VELO tracks, and decides which ones are possible to be be extended into a VELO-UT track. Thanks to the restructuring of the overall data structures by my colleagues, the Velo-UT algorithm now only receives so called \textit{forward tracks}\textcolor{red}{ref to track types} that point towards the UT. Consequently, the filtering must only remove tracks that fall out of the acceptance of the UT, that is, miss all the panels of the UT and cannot produce any UT hits.
+
+Rephrasing the specification in computing terms, for the vector of a states, a vector of booleans has to be produced where each boolean indicates weather to keep the corresponding state, and then the vector of states needs to be collapsed to a new vector that only contains accepted states. Using SIMD, on can easily take 8 elements (on AVX ISA) from the rows of the states, thus do calculations on 8 states at once to produce 8 booleans. It is possible to efficiently leverage Intel's AVX2 instruction set to do the filtering of the 8 items at a good performance\cite{lemire_simd_prune}. First, the items of the 8-vector are permuted in order to bring the selected elements to the front of the vector and leave the unused items at the back. Second, an unaligned memory store operation writes the entire 8 vector to the output data structure at a specific offset. For the next write, the offset is increased by the popcount (number of the selected items), which means the next write will simply overwrite the unselected items of the current operation.
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=0.85\textwidth]{velout_opt_simd_filter}
+	\end{center}
+	\caption{Pruning using vector registers}
+	\label{fig_velout_opt_simd_filter}
+\end{figure}
+
+The results of the filtering are stored in a format identical to the input states for consumption by later steps. Along the states, an index array is also stored which contains the index of the selected states in the original table.
 
 \subsubsection{Vectorization of extrapolation and fitting}
+
+
+
 
 \subsubsection{Vectorization of gathering hits}
 
@@ -774,6 +802,8 @@ BRIEFLY
 		\url{https://public-archive.web.cern.ch/en/LHC/Facts-en.html}
 	\bibitem{tracker_tdr} Tracker (UT and FT) Technical Design Report: \\
 		\url{https://cds.cern.ch/record/1647400?ln=en}
+	\bibitem{lemire_simd_prune} Pruning with AVX2: \\
+		\url{https://github.com/lemire/simdprune}
 \end{thebibliography}
 
 
