@@ -680,7 +680,7 @@ The code violates several coding best practices, which is not strictly an optimi
 
 \subsection{Design of the improved algorithm}
 
-\subsubsection{Uniform grid space partitioning}
+\subsubsection{Uniform grid space partitioning}\label{sec_velout_space_partitioning}
 
 For the logic part, I left the algorithm as it was as I could not find better alternatives \textcolor{red}{(maybe explain parabola and hough methods I tried)}, however I redesigned space partitioning from scratch.
 
@@ -724,28 +724,70 @@ The SOA layout serves three purposes:
 
 Although SOA layouts generally make code harder to read and write, they are crucial to maximally exploit modern CPU architectures in performance critical applications.
 
+\paragraph{Data}
+
+\begin{enumerate}
+	\item States: a structure of five arrays that contain an x, y and z the track passes through, and the track's direction vector tx,ty,1.
+	\item Space partitioned hits: as described in \ref{sec_velout_space_partitioning}, the hits are space partitioned by panels by rows by bins. All the hits reside in a large structure of arrays. The array begins with the hits of panel 0, row 0 and bin 0, then continue with bin 1, bin 2 and so on.
+	\item Filtered states: a subset of States.
+	\item Extrapolated states: one for each filtered state, only the x and y positions of the state are stored as z is known and tx and ty are the same as in the filtered states.
+	\item Gathered hits: a partitioned array of hits that begins with the hits that belong to extrapolated state 0, then the hits for extrapolated state 1 follow and so on. Only the x and z of the fiber's closest point to the track is stored in addition to the index of the original hit in the space partitioned hit array. There are four such arrays, one for each panel.
+	\item Offset for each track: for each extrapolated state it tells the index of the last hit inside the gathered hits array.
+	\item 3-4 UT hits and states of the candidates: for each extrapolated state, zero or more candidates are constructed. The arrays store various parameters, included the four hits the make the candidate and the index of the extrapolated state the candidate belongs to. Thanks to the index, there is no need for an explicit array that tells the offsets into this array for each extrapolated state.
+	\item Fitter parameters: contains a set of parameters one-to-one correspondance with the candidates.
+	\item Scores: a simple real number for each track candidate.
+	\item Indices of best candidates: an array with as many elements as unique indices to extrapolated states in the array of candidates. Contains indices to the array of candidates that refer to the best candidate of the same extrapolated track.
+\end{enumerate}
+
+\paragraph{Steps}
+
+The step illustrated on figures Figures \ref{fig_velout_opt_datastruct_flow_p1} and \ref{fig_velout_opt_datastruct_flow_p2} are very much the same as described in \ref{sec_velout_desc}. However, the crucial difference is that in case of the optimized version, all these steps handle all tracks at once instead of being called once for every track. This is what essentially gives opportunity for vectorization.
+
+\begin{enumerate}
+	\item Filter states: takes an array of states (a point described by x,y,z and the direction described by the tx,ty,1 vector) and outputs the array of states that pass through the UT detector.
+	\item Extrapolate states: takes the filtered states and extrapolates them to a specified z coordinate, writing out the x and y of the extrapolated state. The extrapolation is called four times, producing one output array for each of the four UT panels.
+	\item Gather hits: takes the extrapolated tracks and the partitioned array of hits and writes the hits that match with a state into the output array. Called once for each UT panel.
+	\item Find aligned hits: takes the gathered hits and partitioning information, and compiles a list of track candidates for each track. A candidate is a set of 3 or 4 UT hits that align to form a line that is nearly colinear to the track. A track may have zero or multiple candidates.
+	\item Fit candidates: estimates the path of the particle that produced the candidate's UT hits by parameters, taking as input the candidates and writing out said parameters.
+	\item Scoring candidates: from the estimated parameters of the candidates, creates a score based on how well the parameters approximate the path determined by the hits. The better the fit, the higher the score.
+	\item Select best candidates: for each track, find the candidate with the highest score and writes out an array of which the ith element contains the index of the best candidate for the ith track.
+\end{enumerate}
+
+
 \subsubsection{Vectorization of filtering}
 
 The filtering algorithm takes a set of States that describe the VELO tracks, and decides which ones are possible to be be extended into a VELO-UT track. Thanks to the restructuring of the overall data structures by my colleagues, the Velo-UT algorithm now only receives so called \textit{forward tracks}\textcolor{red}{ref to track types} that point towards the UT. Consequently, the filtering must only remove tracks that fall out of the acceptance of the UT, that is, miss all the panels of the UT and cannot produce any UT hits.
 
-Rephrasing the specification in computing terms, for the vector of a states, a vector of booleans has to be produced where each boolean indicates weather to keep the corresponding state, and then the vector of states needs to be collapsed to a new vector that only contains accepted states. Using SIMD, on can easily take 8 elements (on AVX ISA) from the rows of the states, thus do calculations on 8 states at once to produce 8 booleans. It is possible to efficiently leverage Intel's AVX2 instruction set to do the filtering of the 8 items at a good performance\cite{lemire_simd_prune}. First, the items of the 8-vector are permuted in order to bring the selected elements to the front of the vector and leave the unused items at the back. Second, an unaligned memory store operation writes the entire 8 vector to the output data structure at a specific offset. For the next write, the offset is increased by the popcount (number of the selected items), which means the next write will simply overwrite the unselected items of the current operation.
+Rephrasing the specification in computing terms, for the vector of a states, a vector of booleans has to be produced where each boolean indicates weather to keep the corresponding state, and then the vector of states needs to be collapsed to a new vector that only contains accepted states. Using SIMD, on can easily take 8 elements (on AVX ISA) from the rows of the states, thus do calculations on 8 states at once to produce 8 booleans. It is possible to efficiently leverage Intel's AVX2 instruction set to do the pruning of the 8 items at a good performance\cite{lemire_simd_prune}. First, the items of the 8-vector are permuted in order to bring the selected elements to the front of the vector and move the unused items at the back. Second, an unaligned memory store operation writes the entire 8 vector to the output data structure at a specific offset. For the next write, the offset is increased by the popcount (number of the selected items), which means the next write will simply overwrite the unselected items of the current operation.
 
 \begin{figure}[H]
 	\begin{center}
 		\includegraphics[width=0.85\textwidth]{velout_opt_simd_filter}
 	\end{center}
-	\caption{Pruning using vector registers}
+	\caption{Visualization of the pruning step with 8-way SIMD}
 	\label{fig_velout_opt_simd_filter}
 \end{figure}
 
-The results of the filtering are stored in a format identical to the input states for consumption by later steps. Along the states, an index array is also stored which contains the index of the selected states in the original table.
+The large array of tracks are handled 8 at a time, producing the boolean mask, then doing the pruning, until the whole array is processed. The results of the filtering are stored in a format identical to the input states for consumption by later steps. Besides the states, an index array is also stored which contains the index of the selected states in the original table -- this is necessary bookeeping to associate VELO track with their VELO-UT counterparts.
 
 \subsubsection{Vectorization of extrapolation and fitting}
 
+The extrapolation and fitting code operates on a large array of tracks, it is pure computation with no branching, and the tracks are completely independent -- a perfect candidate for vectorization.
 
+Extrapolation consumes full states that contain the position as well as the direction of the track, and writes out minimal states that contain only the x and y positions and the z of the UT panel we are extrapolating to. This makes sense, as tx and ty don't change, and the z is already known as it is tied to the panel, so the new x and y are enough. In case a subsequent process needs the remaining parameters, it can get it from the original array of states. This kind of split is an advantage of using SOA data layout. The implementation is a straight-forward loop that takes 8 tracks per iteration, does the extrapolation via vector registers, and writes out the 8 extrapolated tracks. The implementation of the fitter is in principle the same as the extrapolation, processing track candidates by batches of 8.
 
 
 \subsubsection{Vectorization of gathering hits}
+
+To recap, the gathering of hits must iterate over each extrapolated state, obtain the panel, row and bin indices for the state, and query the range of hits in that bin from the space partitioner. Then, it has to iterate over the range of hits and select those that are close enough to the track, and write the selected hits contiguously into the output array.
+
+The problem can be split into two parts:
+\begin{enumerate}
+	\item Getting panel, row and bin indices: as this step is the same, branchless pure computation (in theory) for each track, it can be perfectly vectorized.
+	\item Iterating over the range of hits: vectorization simply over tracks is not possible, compiling a contiguous array of all hit candidates of all tracks seems expensive (although best for vectorization), so what's left is vectorizing over the range of hits but going scalar over tracks. The problem is that the number of hits in a bin is less than would be ideal for vector register of width 8, so a lower efficiency if expected.
+\end{enumerate}
+
+
 
 \subsubsection{No vectorization for hit alignment search}
 
