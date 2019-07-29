@@ -711,7 +711,7 @@ Similarly, lookup of hits nearby to a point involves first a similar division to
 	\label{fig_velout_opt_datastruct_flow_p2}
 \end{figure}
 
-\paragraph{Layout of data}
+\paragraph{Layout of data} \mbox{}\vspace{0.4pc}
 
 Figures \ref{fig_velout_opt_datastruct_flow_p1} and \ref{fig_velout_opt_datastruct_flow_p2} show the main steps of the algorithm as well as the exact data structures passed around. The data structures are structures of arrays (SOA), which are represented by tables on the drawing. Each row correspondonds to a certain variable, while the columns usually represent variables that belong to a certain track. In memory, rows are stored in a contiguous block separate from other rows.
 
@@ -724,7 +724,7 @@ The SOA layout serves three purposes:
 
 Although SOA layouts generally make code harder to read and write, they are crucial to maximally exploit modern CPU architectures in performance critical applications.
 
-\paragraph{Data}
+\paragraph{Data} \mbox{}\vspace{0.4pc}
 
 \begin{enumerate}
 	\item States: a structure of five arrays that contain an x, y and z the track passes through, and the track's direction vector tx,ty,1.
@@ -739,7 +739,7 @@ Although SOA layouts generally make code harder to read and write, they are cruc
 	\item Indices of best candidates: an array with as many elements as unique indices to extrapolated states in the array of candidates. Contains indices to the array of candidates that refer to the best candidate of the same extrapolated track.
 \end{enumerate}
 
-\paragraph{Steps}
+\paragraph{Steps} \mbox{}\vspace{0.4pc}
 
 The step illustrated on figures Figures \ref{fig_velout_opt_datastruct_flow_p1} and \ref{fig_velout_opt_datastruct_flow_p2} are very much the same as described in \ref{sec_velout_desc}. However, the crucial difference is that in case of the optimized version, all these steps handle all tracks at once instead of being called once for every track. This is what essentially gives opportunity for vectorization.
 
@@ -754,7 +754,7 @@ The step illustrated on figures Figures \ref{fig_velout_opt_datastruct_flow_p1} 
 \end{enumerate}
 
 
-\subsubsection{Vectorization of filtering}
+\subsubsection{Vectorization of filtering}\label{sec_velout_filtering_vect}
 
 The filtering algorithm takes a set of States that describe the VELO tracks, and decides which ones are possible to be be extended into a VELO-UT track. Thanks to the restructuring of the overall data structures by my colleagues, the Velo-UT algorithm now only receives so called \textit{forward tracks}\textcolor{red}{ref to track types} that point towards the UT. Consequently, the filtering must only remove tracks that fall out of the acceptance of the UT, that is, miss all the panels of the UT and cannot produce any UT hits.
 
@@ -788,17 +788,81 @@ The problem can be split into two parts:
 \end{enumerate}
 
 
+\paragraph{Getting bin indices} \mbox{}\vspace{0.4pc}
 
-\subsubsection{No vectorization for hit alignment search}
+The x, y and z coordinates are given for each extrapolated state, the task is to figure out which grid cell they belong to. Given a uniformly partitioned axis, the bin index for a point can be calculated by evaluating
+\begin{center}
+	$t = (x_{state} - x_{min})/(x_{max} - x_{min})$\\
+	$i =  \lfloor t \cdot N \rfloor$	
+\end{center}
+where $x_{min}$ and $x_{max}$ are the limits of the binned range and $N$ is the number of bins. The formula can be evaluated separately for the three axes, and it can be vectorized over 8 extrapolated states.
+
+To obtain the offset and number of hits for a bin inside the partitioned array of UT hits, a lookup table that is indexed by the bin indices is available. The lookup can be either a scalar operation, or, as implemented, it can use the AVX gather instructions. For older CPUs, there is not much difference, gather instruction may be even slower, however recent Intel CPUs seem to perform better using gathers.\textcolor{red}{add source} One iteration thus returns two SIMD 8-vectors containing the offsets and the number of hits, which means it's completely vectorized.
+
+\paragraph{Filtering the range of hits} \mbox{}\vspace{0.4pc}
+
+As the hits inside the range are not ordered by for example their x coordinates, all of them have to be examined. A vectorized filtering loop described in \ref{sec_velout_filtering_vect} is employed to select nearby hits from the range. Unfortunately, the average number of hits in a bin are in the order of 5 to 15 (depending on grid resolution), so using a SIMD register width of 8 allows for only 1 or 2 iteration per loop, which is less than ideal.
+
+Storage of this hits is similar to the method described in \ref{sec_velout_filtering_vect} with the difference that the output is one big array that contains the gathered hits for all tracks. Consequently, an array of offets is is also output which tells where to find gathered hits for a track in the aggregate array.
+
+\paragraph{Double bins}
+
+As described in \ref{sec_velout_space_partitioning}, not a single bin but instead two adjacent bins are used. This changes the step for getting the bin indices minimally. Two lookups are performed, one for the actual bin index and another for the next or previous bin index, depending on which one the sampled coordinate is closer. (Double sampling only applies to bins, not row or panel indices.) The range is then defined by the offset of the first bin and the sum of the sizes of both bins. The hit filtering is unaffected, as it still takes an offset and a size, not caring where those come from.
+
+
+\subsubsection{Hit alignment search}
+
+The hit alignment search proved to be impractical to vectorize. The search algorithm operates on the nearby his gathered for a track. First, a pair of hits from two different panels are selected, a line is drawn through them, and the remaining two panels are searched for the hits closest to the line. In addition to the pair, an extra hit is accepted if it is withing a threshold to the line. In case 3 or 4 hits (including the pair itself) were found that fall on the line, the track candidate is written to the output.
+
+One average, there are only 2 hits per track per panel, so vectorizing over one member of the pair, the other member of the pair, and the extra hits is not practical. Vectorizing over the tracks if not feasible either, as the number of hits in the four layers can be very different between the track, and branching would ruin the vectorization. Other attempts, such as producing all 3 or 4 hit combinations and then determining if they are on a line is also impractical, as the generation would either be scalar code or inefficient vectorized code.
 
 \subsubsection{Custom memory allocation}
 
+With the optimized version of the Velo-UT algorithm, 20\% of the computation time was spent with memory allocation. To alleviate this issue, I employed a stack memory allocator. At the beginning of the Velo-UT algorithm, a large chunk of memory is allocated and an offset variable is initialized to zero. Whenever memory needs to be allocated, a pointer into the large chunk at the point indicated by offset is returned, and offset is increased by the size of the new allocation. In case the large chunk runs out, a new one is simply allocated and the offset is reset to zero. At the end of the Velo-UT algorithm, all the chunks that have been allocated are freed. The resulting stack allocator has close to zero overhead.
 
 \subsection{Results}
 
 \subsubsection{Overall performance}
 
+I acquired the results by running the code on a Haswell computer, looping over the same event for 100k iterations. The event of choice is a relatively busy event with many tracks. For the tests, the Velo-UT code was running alone, isolated from the rest of the reconstruction.
+
+\begin{table}[H]
+	\centering
+	\begin{tabular}{c | c | c}
+		& GCC 9.1 & Clang 8.0 \\
+		\hline
+		Original & 24157 ms & 21241 ms \\
+		\hline
+		Optimized & 9403 ms & 9744 ms \\
+		\hline
+		Opt. w/o SP & 6971 ms & 7589 ms
+	\end{tabular}
+	\caption{Runtimes of the different configurations.}
+	\label{tbl_runtimes_local}
+\end{table}
+	
+As the space partitioning is a new workload that wasn't present in the original algorithm, timings are shown with it included. The space partitioning can be, however, loosely considered as a replacement to the construction of the \code{HitHandler}, so timings with it excluded are also worth mentioning.
+
+Overall, the optimized algorithm is 2.57x faster with GCC and 2.18x faster with Clang. When the space partitioning is excluded, the numbers are 3.46x and 2.80x, respectively. These numbers fall short to what one would expect by using 8-way SIMD instruction, however they better represent reality. As previously mentioned, a significant portion of the code remained scalar as it was difficult or practically impossible to vectorize and some of the vectorized code suffers from inefficiencies due to small amount of data in the vectorized loops. Additionally, the original non-vectorized code gets auto-vectorized by the compilers, which further shifts the balance. Overall, the speedup if still significant and worthwhile.
+
 \subsubsection{Microarchitecture usage, bottlenecks}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=0.85\textwidth]{velout_uarch_overall_orig}
+	\end{center}
+	\caption{Microarchitecture usage of the original algorithm, results from Intel VTune.}
+	\label{fig_velout_uarch_overall_orig}
+\end{figure}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=0.85\textwidth]{velout_uarch_overall_opt}
+	\end{center}
+	\caption{Microarchitecture usage of the optimized algorithm.}
+	\label{fig_velout_uarch_overall_opt}
+\end{figure}
+
 
 \subsubsection{Effects of customized memory allocation}
 
