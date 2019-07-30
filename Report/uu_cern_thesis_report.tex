@@ -770,14 +770,14 @@ Rephrasing the specification in computing terms, for the vector of a states, a v
 
 The large array of tracks are handled 8 at a time, producing the boolean mask, then doing the pruning, until the whole array is processed. The results of the filtering are stored in a format identical to the input states for consumption by later steps. Besides the states, an index array is also stored which contains the index of the selected states in the original table -- this is necessary bookeeping to associate VELO track with their VELO-UT counterparts.
 
-\subsubsection{Vectorization of extrapolation and fitting}
+\subsubsection{Vectorization of extrapolation and fitting}\label{sec_velout_vectorize_extrap_fit}
 
 The extrapolation and fitting code operates on a large array of tracks, it is pure computation with no branching, and the tracks are completely independent -- a perfect candidate for vectorization.
 
 Extrapolation consumes full states that contain the position as well as the direction of the track, and writes out minimal states that contain only the x and y positions and the z of the UT panel we are extrapolating to. This makes sense, as tx and ty don't change, and the z is already known as it is tied to the panel, so the new x and y are enough. In case a subsequent process needs the remaining parameters, it can get it from the original array of states. This kind of split is an advantage of using SOA data layout. The implementation is a straight-forward loop that takes 8 tracks per iteration, does the extrapolation via vector registers, and writes out the 8 extrapolated tracks. The implementation of the fitter is in principle the same as the extrapolation, processing track candidates by batches of 8.
 
 
-\subsubsection{Vectorization of gathering hits}
+\subsubsection{Vectorization of gathering hits}\label{sec_velout_vectorize_gathering_hits}
 
 To recap, the gathering of hits must iterate over each extrapolated state, obtain the panel, row and bin indices for the state, and query the range of hits in that bin from the space partitioner. Then, it has to iterate over the range of hits and select those that are close enough to the track, and write the selected hits contiguously into the output array.
 
@@ -849,22 +849,52 @@ Overall, the optimized algorithm is 2.57x faster with GCC and 2.18x faster with 
 
 \begin{figure}[H]
 	\begin{center}
-		\includegraphics[width=0.85\textwidth]{velout_uarch_overall_orig}
+		\includegraphics[width=\textwidth]{velout_uarch_overall_orig}
 	\end{center}
 	\caption{Microarchitecture usage of the original algorithm, results from Intel VTune.}
 	\label{fig_velout_uarch_overall_orig}
 \end{figure}
 
+The two most significant problems with the original algorithm are being bound by memory and by bad speculation.
+
+Understanding bad speculation is straightforward, if the CPU guesses to go on the \code{true} branch of an \code{if} statement and queues the upcoming instructions of that branch, but it happens that the \code{if} executes the \code{false} branch, all the queued instructions have to be cancelled.\cite{intel_vtune_docs} To alleviate this issue, one should remove branching altogether or, if not possible, make them more predictable.
+
+As the profiler suggests, the code is mostly memory bound, more specifically, L1 cache bound. According to documentation from Intel, this metric shows up when the CPU is waiting for L1 load operations when the L1 cache was hit. This can happen, for example, when a load epends on an older store. To alleviate the problem, data dependencies can be rethought and the number of memory accesses per cycles spent with computation can be reduced.\cite{intel_vtune_docs}
+
 \begin{figure}[H]
 	\begin{center}
-		\includegraphics[width=0.85\textwidth]{velout_uarch_overall_opt}
+		\includegraphics[width=\textwidth]{velout_uarch_overall_opt}
 	\end{center}
 	\caption{Microarchitecture usage of the optimized algorithm.}
 	\label{fig_velout_uarch_overall_opt}
 \end{figure}
 
+Despite the optimized version being 2.5 times faster, the microarchitecture usage pattern shows some resemblance.
+
+The most notable difference is the complete absence of bad speculation problems. I made a good effort to remove branching from the code so that computing passes can iterate over the entire datasets without conditional code execution. One trick to mitigate branching is in the filtering loops (\ref{sec_velout_filtering_vect} and \ref{sec_velout_vectorize_gathering_hits}) where masking and permuting of AVX registers is leveraged to emulate branching. Other tricks are, for example, the use of tiny branches which optimize out to CMOV instructions or the exploitation of boolean to integer conversion to obtain conditional numeric values by arithmetic instead of branching. The code for the fitting (\ref{sec_velout_vectorize_extrap_fit}) needs to handle track candidates with either 3 or 4 hits, but instead of branching, the unused hit in the 3-hit-case is simply masked out of the computations by using a weight of zero. This incurs a very little penalty, as the weight is needed for the algorithm regardless, and the elimination of branches allows for perfect vectorization.
+
+\vspace{1pc}
+
+Unfortunately, the algorithm is still the most heavily bound by memory accesses. VTune highlights L1 memory accesses similarly to the unoptimized version, but it does not indicate any specific issue in connection with L1. I examined the code of the gathering of the hits for data dependencies that could cause high L1 latencies, but it does not seem to show any. On the other hand, the code needs to read a lot of data, and does minimal calculation on it in comparison. Though this case is not mentioned in the documentation by Intel, a toy example of adding two small arrays that fit in L1 using vectorized instructions results in a heavily memory bound program according to VTune. Based on that, it simply seems like L1 is unable to serve the execution units of the CPU with enough data when the operations they do are too simple and fast. Since the algorithm already uses SOA data layouts and vector register loads to read only the most necessary data in the largest possible chunks, this is most likely a characteristic of the algorithm.
+
+\vspace{1pc}
+
+In place of branch prediction, VTune shows the algorithm is core bound. VTune indicates that this problems is to a lesser extent caused by uveruse of the divider and to a larger extent by port utilization issues. The divider can be helped by using approximate divisions or factoring them out of loops, but the divisions were truly needed here. I tried to examine individual functions that are core bound due to port utilization, but I couldn't track down the source of the problem. The most promimnent core bound function was \code{ScanExtraHits}, which contains a chain of dependent FP instructions, as indicated as a problem by the documentation\cite{intel_vtune_docs}. With GCC, which uses a fused multiply-add, the function is not core bound at all. Clang aggressively unrolls the loop even though it does two iterations on average, but does not use FMA, making the function core bound. When I forcefully disable loop unrolling, the function becomes even more core bound and the IPC dramatically decreases. It would need a significant amount of time to figure out and tune the function in isolation, which is not worth the effort.
+
+\lstinputlisting[
+	caption=Code of \code{ScanExtraHits}.,
+	label=lst_velout_scanextrahits,
+	language=C++,
+	firstline=134,
+	lastline=146,
+	firstnumber=134]
+	{source_code/PrVeloUtOpt.h}
+
+
 
 \subsubsection{Effects of customized memory allocation}
+
+
 
 \subsubsection{Comparison of Clang and GCC}
 
@@ -909,7 +939,11 @@ BRIEFLY
 	\bibitem{tracker_tdr} Tracker (UT and FT) Technical Design Report: \\
 		\url{https://cds.cern.ch/record/1647400?ln=en}
 	\bibitem{lemire_simd_prune} Pruning with AVX2: \\
-		\url{https://github.com/lemire/simdprune}
+		\url{https://github.com/lemire/simdprune} 
+	\bibitem{intel_vtune_docs} Documentation of microarchitecture analysis by Intel: \\
+		\url{https://software.intel.com/en-us/vtune-amplifier-help-core-bound}\\
+		\url{https://software.intel.com/en-us/vtune-amplifier-help-l1-bound}\\
+		\url{https://software.intel.com/en-us/vtune-amplifier-cookbook-top-down-microarchitecture-analysis-method}
 \end{thebibliography}
 
 
