@@ -110,12 +110,11 @@ problem: \\
 
 \subsection{About CERN}\label{sec_about_cern}
 
-CERN (European Organization for Nuclear Research) is an international high energy experimental physics research organization situated near Geneva, on the Franco-Swiss border. CERN is host to the world's largest particle accelerator and numerous experiments which aim to provide a better understanding of the universe. The goals of the experiments, among others, are to verify the standard model of particles. \textcolor{cyan}{TODO: list more concrete goals}.
+CERN (European Organization for Nuclear Research) is an international high energy experimental physics research organization situated near Geneva, on the Franco-Swiss border. CERN is host to the world's largest particle accelerator and numerous experiments which aim to provide a better understanding of the fundamental laws of the universe.
 \cite{cern_about}
 
 
 \subsection{What are particle accelerators}\label{sec_part_accel_intro}
-
 
 \subsubsection{Idea and purpose of accelerators}\label{sec_part_accel_idea}
 Particle accelerators, as the name suggests, accelerate charged particles to extremely high velocities. Generally, the accelerated particles are elementary particles, such as protons or electrons, or ions. CERN mainly operates with protons and lead ions, though we can see other particles as well. The velocity of the particles often approaches that of the speed of light in vacuum. CERN's first particle accelerator, the Synchrocyclotron, reached about 80\% of the speed of light, whereas CERN's largest accelerator's, the LHC, accelerates its protons to 99.9999991\% \cite{lhc_facts_and_figures} of the speed of light.
@@ -316,10 +315,6 @@ During this thesis project, I will be helping the LHCb collaboration to reach it
 \newpage
 \section{Choosing optimization targets}
 
-\color{red}
-Explain the choice of initial choice of algorithms, based on the pie chart diagram and logical reasoning of our goals (i.e. what's needed).
-\color{black}
-
 As mentioned in \ref{sec_reco_sw_overview}, the reconstruction consists of individual algorithms which account for the bulk of the computation. (Scheduling the algorithms and culling decisions account for a much smaller CPU load.) It is straightforward to first start optimizing the algorithms which take the largest chunk of available computing power.
 
 \begin{figure}[H]
@@ -336,6 +331,7 @@ Looking at figure \ref{fig_algo_usage_choice}, we can see that the parametrized 
 %----------------------------------------------------------------------------
 % === PARAMETRIZED KALMAN ===
 %----------------------------------------------------------------------------
+\newpage
 \section{Parametrized Kalman Fitter}
 
 As described in \ref{sec_reco_sw_overview}, the track is reconstructed incrementally, start with velo hits, extended by UT hits and finally adding the FT hits. This process, however, is not so accurate. This manifests itself in the creation of \textit{ghost tracks} and missed tracks, and generally, tracks are only roughly aligned with the hits they were made from. Ghost tracks are tracks that did not exist in the real collision, they are merely artifacts of the reconstruction algorithms. As such, ghost tracks are highly undesirable, but this is where the Kalman fitter comes into play. 
@@ -349,7 +345,7 @@ As a result, the estimated state or path of the particle aligns more closely wit
 	\begin{center}
 		\includegraphics[width=0.9\textwidth]{kalmanfit_overall_breakdown}
 	\end{center}
-	\caption{Hotspots, or which parts of the Kalman fitter takes most of the time. Measured by Intel VTune Amplifier XE. \textcolor{red}{MAYBE add appendix explaining profiling and vtune}.}
+	\caption{Hotspots, or which parts of the Kalman fitter takes most of the time. Measured by Intel VTune Amplifier XE.}
 	\label{fig_kalman_vtune_initial}
 \end{figure}
 
@@ -379,7 +375,7 @@ When a particle hits a detector, the identifier of the element of the detector t
 
 Over the years however, this system grow unnecessarily complex resulting in a dramatic slowdown. Clusters, containing some basic information about the hit, such as its location, are stored inside measurement providers as a large array. In order to find the cluster that corresponds to the ID, this whole array is searched linearly. Once the cluster is found, a \textit{Measurement} object is allocated on the heap and initialized from it. Finally, another object, called a \textit{Trajectory}, is queried from the measurement, from which the data actually required can be extracted. The storage of clusters and creation of measurements is handled by \textit{MeasurementProviders}. Additionally, we can distinguish separate measurement objects for the Velo, UT and FT hits.
 
-As seen, this is a convoluted process, involving an asymptotically unacceptable linear search and a lot of dynamic memory allocation. Dynamic allocation is not only slow, it highly suffers from thread contention at the operating system level in our multi-threaded software. Additionally, the individually allocated objects are scattered around in memory, resulting in poor CPU cache performance \textcolor{red}{MAYBE add appendix explaining caches}.
+As seen, this is a convoluted process, involving an asymptotically unacceptable linear search and a lot of dynamic memory allocation. Dynamic allocation is not only slow, it highly suffers from thread contention at the operating system level in our multi-threaded software. Additionally, the individually allocated objects are scattered around in memory, resulting in poor CPU cache performance.
 
 \begin{figure}[H]
 	\begin{center}
@@ -397,14 +393,14 @@ Figure \ref{fig_kalmanfit_loadhits_breakdown} clearly shows an excerpt from the 
 To avoid this long chain to acquire the required data, the hits should be directly stored inside the Track rather than only by their IDs. Ideally, this would not incur any performance penalty, since the algorithms preceding the Kalman fitter all use the position and error information associated with a hit, so the detector element identifier is fully decoded anyway.
 
 As described, the Track object has the following content (largely simplified):
-\begin{lstlisting}
+\begin{lstlisting}[language=C++]
 	struct Track {
 		std::vector<LHCbID> ids;
 	};
 \end{lstlisting}
 
 In the new model, the following structure is used:
-\begin{lstlisting}
+\begin{lstlisting}[language=C++]
 	struct TrackHit {
 		Vector3D beginPosition;
 		Vector3D endPosition;
@@ -468,7 +464,7 @@ Figure \ref{fig_algo_usage_original_bestthru} shows the in the best throughput c
 	\label{fig_kalman_disasm_src_naive}
 \end{figure}
 
-Looking at the disassembly, we can see two \textit{CALL} instructions, which correspond to the two function calls \textit{MakeFitterHit} and \textit{emplace\_back}. This means that the functions haven't been inlined. Inlining[\textcolor{green}{ref}] is a complex topic, because it can make code faster by removing function prologues[\textcolor{green}{ref}], but excessive inlining can also make code slower by polluting the instruction caches with two many repeated code snippets. In this case, the latter is unlikely, since these function are only present at this location, so inlining would be preferable.
+Looking at the disassembly, we can see two \textit{CALL} instructions, which correspond to the two function calls \textit{MakeFitterHit} and \textit{emplace\_back}. This means that the functions haven't been inlined. Inlining is a complex topic, because it can make code faster by removing function prologues, but excessive inlining can also make code slower by polluting the instruction caches with two many repeated code snippets. In this case, the latter is unlikely, since these function are only present at this location, so inlining would be preferable.
 
 \begin{figure}[H]
 	\begin{center}
@@ -528,22 +524,24 @@ Another interesting figure to look at is how the weight of the parameterized Kal
 	\label{fig_kalmanfit_results_algousage}
 \end{figure}
 
-In light of the code changes and their effect on the overall performance, we can safely say that code should strive to do the data transformations in the simplest possible way. Adding extra layers on top, if not done carefully using zero-cost abstractions, will dramatically slow the code down. In performance critical applications, a good data oriented design can give far better benefits that assembly-level micro-optimizations. Additionally, a good data structures opens up the doors to more effective micro-optimizations, such as vectorization[\textcolor{green}{ref}].
+In light of the code changes and their effect on the overall performance, we can safely say that code should strive to do the data transformations in the simplest possible way. Adding extra layers on top, if not done carefully using zero-cost abstractions, will dramatically slow the code down. In performance critical applications, a good data oriented design can give far better benefits that assembly-level micro-optimizations. Additionally, a good data structures opens up the doors to more effective micro-optimizations, such as vectorization.
 
 
 %----------------------------------------------------------------------------
 % === DATA MODEL ===
 %----------------------------------------------------------------------------
+\newpage
 \section{Streamlining the computation's data model}
 
 
 %----------------------------------------------------------------------------
 % === VELOUT OPT ===
 %----------------------------------------------------------------------------
+\newpage
 \section{Vectorizing and optimizing the Velo-UT algorithm}\label{sec_opt_velout}
 
 As highlighted in \ref{sec_reco_sw_overview}, the Velo-UT algorithm extends the straight line tracks created in the VELO tracking algorithm by assigning UT silicon strip hits to it. More importantly, the Velo-UT algorithm provides a course estimate for the momentum of the particle, allowing efficient tracking in the FT.
-The algorithm takes roughly 10 percent of the pipeline, so optimizing it is not expected to provide a high overall gain in performance, however its code is outdated and is in much need of an overhaul. My goal for the Velo-UT was to streamline the code to adhere to modern coding practices, and in the meantime, to make the algorithm play well with modern CPU architectures. In light of this, I was aiming at a highly SIMD-vectorized\textcolor{red}{TODO: add appendix} code, which operates with SOA\textcolor{red}{TODO: add appendix} data structures
+The algorithm takes roughly 10 percent of the pipeline, so optimizing it is not expected to provide a high overall gain in performance, however its code is outdated and is in much need of an overhaul. My goal for the Velo-UT was to streamline the code to adhere to modern coding practices, and in the meantime, to make the algorithm play well with modern CPU architectures. In light of this, I was aiming at a highly SIMD-vectorized code, which operates with SOA data structures
 
 
 \subsection{Geometry of the UT detector}
@@ -690,7 +688,7 @@ Additionally, as part of the creation of the track, a final, more accurate fit i
 
 \subsubsection{General code design}
 
-The code violates several coding best practices, which is not strictly an optimization problem, but is still an important concern as it is hard to find optimization opportunities in code that is hard to reason about. The most severe breaches are the single responsibility and dependency inversion priciples. An example for the former is \href{https://gitlab.cern.ch/lhcb/Rec/blob/1b7edc5aea96f2225601238b3f64e478e41b6c70/Pr/PrVeloUT/src/PrVeloUT.cpp#L337}{formClusters}, which not only find aligned hits but also parametrically fits them, an example for the latter is \href{https://gitlab.cern.ch/lhcb/Rec/blob/1b7edc5aea96f2225601238b3f64e478e41b6c70/Pr/PrVeloUT/src/PrVeloUT.h#L191}{simpleFit}, which modifies the flow control of its caller (formClusters) via modification of in-out (quasi-global) parameters. When the problems are alleviated, the search for aligned hits and the fitting can be done completely separately, which provides a massive gain thanks to the perfect vectorization of the fitting process.
+The code violates several coding best practices, which is not strictly an optimization problem, but is still an important concern as it is hard to find optimization opportunities in code that is hard to reason about. The most severe breaches are the single responsibility and dependency inversion priciples. An example for the former is \href{https://gitlab.cern.ch/lhcb/Rec/blob/1b7edc5aea96f2225601238b3f64e478e41b6c70/Pr/PrVeloUT/src/PrVeloUT.cpp#L337}{\code{formClusters}}, which not only find aligned hits but also parametrically fits them, an example for the latter is \href{https://gitlab.cern.ch/lhcb/Rec/blob/1b7edc5aea96f2225601238b3f64e478e41b6c70/Pr/PrVeloUT/src/PrVeloUT.h#L191}{\code{simpleFit}}, which modifies the flow control of its caller (formClusters) via modification of in-out (quasi-global) parameters. When the problems are alleviated, the search for aligned hits and the fitting can be done completely separately, which provides a massive gain thanks to the perfect vectorization of the fitting process.
 
 
 \subsection{Design of the improved algorithm}
@@ -988,6 +986,7 @@ Figure \ref{fig_velout_without_alloc} shows that without any special memory allo
 %----------------------------------------------------------------------------
 % === Conclusion ===
 %----------------------------------------------------------------------------
+\newpage
 \section{Conclusion}
 
 \color{red}
@@ -1002,6 +1001,7 @@ BRIEFLY
 %----------------------------------------------------------------------------
 % REFERENCES
 %----------------------------------------------------------------------------
+\newpage
 \section{References}
 
 \begin{thebibliography}{asd}
@@ -1046,5 +1046,22 @@ BRIEFLY
 	lastline=332,
 	firstnumber=277]
 	{source_code/PrVeloUT.cpp}
+
+
+\appendix
+
+\newpage
+\section{Intel VTune Amplifier XE}
+
+\section{CPU pipelining}
+
+\section{Memory hierarchy of modern computers}
+
+\section{Inlining}
+
+\section{Vectorization}
+
+\section{LHCb track types}
+
 
 \end{document}
