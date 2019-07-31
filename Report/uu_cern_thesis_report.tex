@@ -895,6 +895,27 @@ In place of branch prediction, VTune shows the algorithm is core bound. VTune in
 \subsubsection{Effects of customized memory allocation}
 
 
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=\textwidth]{velout_without_alloc}
+	\end{center}
+	\caption{Hotspots profiling with VTune. Note the high amount of time spent in \code{operator new}.}
+	\label{fig_velout_without_alloc}
+\end{figure}
+
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=\textwidth]{velout_with_alloc}
+	\end{center}
+	\caption{With the stack allocator, \code{operator new} has almost disappeared.}
+	\label{fig_velout_with_alloc}
+\end{figure}
+
+normal alloc: 34068/33817 ms
+stack alloc: 29115/29483
+
+
 
 \subsubsection{Comparison of Clang and GCC}
 
