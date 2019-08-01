@@ -561,14 +561,25 @@ Multiple algorithms have their own internal data structures for their computatio
 
 \subsection{Issues with the existing model}
 
+\subsubsection{Overgeneralization and code bloat}
+
+The \code{Track} object was meant to store every kind of track for any purpose. It is used by all the tracking algorithms, including the VELO, UT and FT tracking. Additionally, it contains derived values of the tracking, such as the estimated particle states, but also information related to final fitting. Most algorithms, however, access only a small fraction of this data, and make expensive checks to verify if the particular data they need is inside the \code{Track}. The \code{Track} is a prime example of the \textit{god class} anti-pattern, which in this case not only compromises code quality but also negatively affects performance due to its heavy weight.
+
 \subsubsection{Memory allocations}
+
+The code snippet \ref{lst_trackv2_snippet} shows only the heavy members of the \code{Track}. The \code{extraInfo}, \code{measurements} and \code{nodes} members are completely unused for the trigger, so they don't amount to any dynamic memory allocation, but they still amount to about 100 bytes of unused data (depending on implementation). The remaining members are actually used, each of them holding dynamically allocated memory. While the IDs and ancestors are only vectors of simple integer data, a \code{State} contains about 80 bytes.
 
 \subsubsection{Expensive copies}
 
+Due to the framework's implementation, each algorithm writes its output (a \code{vector} of \code{Track}s) into an immutable storage. Since the \code{Track} was intended to be mutated by the algorithms, each algorithm has to make a copy of the immutable storage. Because of the several dynamic allocations for each \code{Track} and the sheer size of the members and dynamically allocated storage, the copying takes a significant amount of time.
+
 \subsubsection{Inefficient memory access patterns}
+
+Dynamically allocated memory reduces spatial locality of the data, which pollutes the CPU cache when an entire cache block is loaded for a much smaller piece of data. Additionally, lack of locality increases the chance of cache misses and disables prefetching techniques, negatively affecting performance. In this particular case, locality is an issue on the level of an individual \code{Track} which stores its data in dynamically allocated blocks and also on the level of the vector of \code{Track}s, which could have an SOA layout to store the \code{State}s of all tracks in the same vector.
 
 \subsubsection{Cannot be vectorized}
 
+To achieve maximum performance, it is necessary to make use of the SIMD capabilities of modern CPUs. Vectorization inherently works on SOA data structures, so it makes sense to have the data laid out in that scheme by default. With the current model, one would have to access the first state's $x$ coordinate for 8 consecutive tracks and load them into a vector register to allow for vectorized calculations. This takes 8 memory accesses to non-contiguous locations to fetch the pointers to the vector of states, then another 8 memory accesses to fetch the actual x coordinates. This conversion takes significantly longer than the entire calculation, hiding all the profits of vectorization.
 
 \subsection{Proposed model}
 
