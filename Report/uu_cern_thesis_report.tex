@@ -533,9 +533,31 @@ In light of the code changes and their effect on the overall performance, we can
 \newpage
 \section{Streamlining the computation's data model}
 
+While profiling the Kalman filter, I had to change the data model by adding additional data to the \code{Track} which had adverse effects of performance. As the changes were temporary, the performance issue wasn't a concern, but the general performance of the data model was. Turns out, the data was poorly organized and contained a substantial amount of additional data accumulated over the years that was not strictly necessary but still contirbuted to expensive memory copies. This chapter explains how data structures can be streamlined to better accodomate modern computer architectures.
+
 \subsection{The existing data model}
 
+The algorithms that constitute the processing chain are illustrated of figure \ref{fig_algorithms_brunel}. There are two main categories of data passed from one algorithm to the other: hits and tracks. (Hits are out of scope of this discussion.) All data related to a track is represented by the \code{Track} class, and in general, \code{std::vector}s of \code{Track}s are passed from one algorithm to the next. The \code{Track} was designed to be a generic object that is able to represent all the different types of tracks, for example a \textit{velo track} or a \textit{forward track}.
+
+\begin{lstlisting}[language=C++,caption=Simplified code of the \code{Track} class.,label=lst_trackv2_snippet]
+	class Track {
+		/* ... */
+	private:
+		std::vector<LHCbID> lhcbIDs;
+		std::vector<State> states;
+		std::vector<Track*> ancestors;
+		std::map<int, double> extraInfo;
+		std::vector<Measurement*> measurements;
+		std::vector<Node*> nodes;
+	};	
+\end{lstlisting}
+
+In case of the trigger software, all tracks begin with the VELO. The VELO tracker finds hits that are aligned in a straight line and creates a \textit{velo track} that is then forwarded to the VELO-UT tracker. The so called \textit{velo tracks} contain the IDs of the pixels that were hit in the VELO detector, as well as the estimated state of the particle at its birth and when it left the VELO. Similarly, the VELO-UT tracker appends the IDs of the UT hits that it found as well as an additional state of the particle inside the UT detector.
+
+
 \subsection{Connection of the data model and the algorithms}
+
+Multiple algorithms have their own internal data structures for their computations, including special track objects, hit objects and particle states. In all cases, however, the generic input \code{Track} has to be converted to these internal data structures, which incurs an unnecessary overhead. The faster the algorithm itself gets, the larger in proportion the conversion overhead. The main tool to speed up algorithms is vectorization, which requires highly specialized data structures to be efficient, therefore requiring careful tuning of the general data layout to avoid conversion.
 
 \subsection{Issues with the existing model}
 
