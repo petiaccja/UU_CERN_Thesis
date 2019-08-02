@@ -537,9 +537,10 @@ While profiling the Kalman filter, I had to change the data model by adding addi
 
 \subsection{The existing data model}
 
-The algorithms that constitute the processing chain are illustrated of figure \ref{fig_algorithms_brunel}. There are two main categories of data passed from one algorithm to the other: hits and tracks. (Hits are out of scope of this discussion.) All data related to a track is represented by the \code{Track} class, and in general, \code{std::vector}s of \code{Track}s are passed from one algorithm to the next. The \code{Track} was designed to be a generic object that is able to represent all the different types of tracks, for example a \textit{velo track} or a \textit{forward track}.
+The algorithms that constitute the processing chain are illustrated of figure \ref{fig_algorithms_brunel}. There are two main categories of data passed from one algorithm to the other: hits and tracks. All data related to a track is represented by the \code{Track} class, and in general, \code{std::vector}s of \code{Track}s are passed from one algorithm to the next. The \code{Track} was designed to be a generic object that is able to represent all the different types of tracks, for example a \textit{velo track} or a \textit{forward track}.
 
-\begin{lstlisting}[language=C++,caption=Simplified code of the \code{Track} class.,label=lst_trackv2_snippet]
+\begin{lstlisting}[language=C++,caption=Simplified code of the \code{Track} class.,label=lst_datamodel_trackv2_simple
+]
 	class Track {
 		/* ... */
 	private:
@@ -559,7 +560,7 @@ In case of the trigger software, all tracks begin with the VELO. The VELO tracke
 
 Multiple algorithms have their own internal data structures for their computations, including special track objects, hit objects and particle states. In all cases, however, the generic input \code{Track} has to be converted to these internal data structures, which incurs an unnecessary overhead. The faster the algorithm itself gets, the larger in proportion the conversion overhead. The main tool to speed up algorithms is vectorization, which requires highly specialized data structures to be efficient, therefore requiring careful tuning of the general data layout to avoid conversion.
 
-\subsection{Issues with the existing model}
+\subsection{Issues with the existing model}\label{sec_datamodel_issues}
 
 \subsubsection{Overgeneralization and code bloat}
 
@@ -567,7 +568,7 @@ The \code{Track} object was meant to store every kind of track for any purpose. 
 
 \subsubsection{Memory allocations}
 
-The code snippet \ref{lst_trackv2_snippet} shows only the heavy members of the \code{Track}. The \code{extraInfo}, \code{measurements} and \code{nodes} members are completely unused for the trigger, so they don't amount to any dynamic memory allocation, but they still amount to about 100 bytes of unused data (depending on implementation). The remaining members are actually used, each of them holding dynamically allocated memory. While the IDs and ancestors are only vectors of simple integer data, a \code{State} contains about 80 bytes.
+The code snippet \ref{lst_datamodel_trackv2_simple} shows only the heavy members of the \code{Track}. The \code{extraInfo}, \code{measurements} and \code{nodes} members are completely unused for the trigger, so they don't amount to any dynamic memory allocation, but they still amount to about 100 bytes of unused data (depending on implementation). The remaining members are actually used, each of them holding dynamically allocated memory. While the IDs and ancestors are only vectors of simple integer data, a \code{State} contains about 80 bytes.
 
 \subsubsection{Expensive copies}
 
@@ -581,17 +582,239 @@ Dynamically allocated memory reduces spatial locality of the data, which pollute
 
 To achieve maximum performance, it is necessary to make use of the SIMD capabilities of modern CPUs. Vectorization inherently works on SOA data structures, so it makes sense to have the data laid out in that scheme by default. With the current model, one would have to access the first state's $x$ coordinate for 8 consecutive tracks and load them into a vector register to allow for vectorized calculations. This takes 8 memory accesses to non-contiguous locations to fetch the pointers to the vector of states, then another 8 memory accesses to fetch the actual x coordinates. This conversion takes significantly longer than the entire calculation, hiding all the profits of vectorization.
 
+
 \subsection{Proposed model}
 
-i can probably explain what i made a merge request for...
+\subsubsection{Hits}
+
+Before getting to the \code{Track} object, the structures representing the hits had to be refactored. Generally, there were 3 different hit \code{class}es, one for the VELO hits, one for the UT hits and one for the FT hits.
+
+\begin{lstlisting}[
+	language=C++,
+	label=lst_datamodel_uthit_original,
+	caption=The original class definition for UT hits.]
+class Hit final {
+public:
+	Hit(LHCb::UTChannelID chanID, unsigned int size, bool highThreshold, double dxDy, double xat0, double zat0, double yBegin, double yEnd, double cos, double error, unsigned int strip, double fracStrip) { ... }
+
+	float cos() const { return m_cos; }
+	float cosT() const { return (fabs(m_xAtYEq0) < 1.0E-9) ? 1. / std::sqrt(1 + m_dxDy * m_dxDy) : cos(); }
+	float dxDy() const { return m_dxDy; }
+	bool highThreshold() const { return m_highThreshold; }
+	bool isYCompatible(const float y, const float tol) const { return yMin() - tol <= y && y <= yMax() + tol; }
+	bool isNotYCompatible(const float y, const float tol) const { return yMin() - tol > y || y > yMax() + tol; }
+	LHCb::LHCbID lhcbID() const { return LHCb::LHCbID(m_chanID); }
+	LHCb::UTChannelID chanID() const { return m_chanID; }
+	int planeCode() const { return 2 * (m_chanID.station() - 1) + (m_chanID.layer() - 1) % 2; }
+	float sinT() const { return tanT() * cosT(); }
+	int size() const { return m_size; }
+	float tanT() const { return -m_dxDy; }
+	float weight() const { return m_weight * m_weight; }
+	float error() const { return 1.0f / m_weight; }
+	float xAt(const float globalY) const { return m_xAtYEq0 + globalY * m_dxDy; }
+	float xAtYEq0() const { return m_xAtYEq0; }
+	float xAtYMid() const { return m_x; }
+	float xMax() const { return std::max(xAt(yBegin()), xAt(yEnd())); }
+	float xMin() const { return std::min(xAt(yBegin()), xAt(yEnd())); }
+	float xT() const { return cos(); }
+	float yBegin() const { return m_yBegin; }
+	float yEnd() const { return m_yEnd; }
+	float yMax() const { return std::max(yBegin(), yEnd()); }
+	float yMid() const { return 0.5 * (yBegin() + yEnd()); }
+	float yMin() const { return std::min(yBegin(), yEnd()); }
+	float zAtYEq0() const { return m_zAtYEq0; }
+	unsigned int strip() const { return m_strip; }
+	double fracStrip() const { return m_fracStrip; }
+	int pseudoSize() const;
+
+private:
+	float m_cos;
+	float m_dxDy; ///< The dx/dy value
+	float m_weight; ///< The hit weight (1/error)
+	float m_xAtYEq0; ///< The value of x at the point y=0
+	float m_yBegin; ///< The y value at the start point of the line
+	float m_yEnd; ///< The y value at the end point of the line
+	float m_zAtYEq0; ///< The value of z at the point y=0
+	float m_x;
+	LHCb::UTChannelID m_chanID;
+	unsigned int m_size;
+	bool m_highThreshold;
+	unsigned int m_strip;
+	double m_fracStrip;
+};
+\end{lstlisting}
+
+As it can be seen on code example \ref{lst_datamodel_uthit_original}, these were full-fledged classes which accumulated quite some cruft over the years, having unused data members and a long list of trivial and less trivial methods. The requirements for the hit classes are the same as for the track: plain old data objects that can be represented in an SOA format for efficient vectorization. Additionally, it is very important to keep the size of these objects to the minimum because there are a large number of hits and they are heavily used in computations.
+
+\vspace{1pc}
+
+Without further explanation of the original data members, this class can be reduced to the following:
+
+\begin{lstlisting}[
+	language=C++,
+	label=lst_datamodel_uthit_simple_aos,
+	caption=Plain old data array of structure format for UT hits.]
+struct {
+	float x0;
+	float y0;
+	float z0;
+	float y1;
+	float dxdy;
+	float error;
+	uint32_t id;
+};
+\end{lstlisting}
+
+Despite the reduction in code size, the simplified structure is enough for the VELO-UT tracker to perform its task. The structure is a minimal representation of a UT silicon strip in 3D space: contains the 
+$\begin{bmatrix}
+	x_0 & 0 & z_0
+\end{bmatrix}$
+starting point, the $[y0, y1]$ interval that represents the two ends of the fiber and the $dx/dy$ slope of the fiber. Note that the fiber is almost vertical (aligned with the Y axis), in same cases tilted slightly by a Z-axis rotation, so these parameters are valid and precise in all cases. The error represents the uncertainty of the particle due to the fiber's width and the ID is a unique identifier for each fiber.
+
+\vspace{1pc}
+
+A similar scheme can be applied to both the VELO and the FT hits.
+
+
+\subsubsection{Tracks}
+
+First, we have to realize that the \code{Track} class breaks the single responsibility principle by representing multiple objects of multiple purposes under the same class. Second, the only thing that's necessary from the \code{Track} object illustrated in code snippet \ref{lst_datamodel_trackv2_simple} is the \code{LHCbID}s (or hits), the \code{State}s and the information as to which UT track came from which VELO track (\code{ancestors}).
+
+In light of this, it makes sense to separate the states and the sets of hits into two separate \code{vector}s of the same size, and the output of the VELO tracking algorithm becomes
+\begin{lstlisting}[language=C++]
+std::tuple<
+	std::vector<VeloTrack>,
+	std::vector<State>
+>;
+\end{lstlisting}
+where a \code{VeloTrack} is defined as 
+\begin{lstlisting}[language=C++]
+struct VeloTrack {
+	std::vector<VeloHit> veloHits;
+};
+\end{lstlisting}
+
+Note that there is no need for separately specifying the \code{LHCbID}s as the \code{VeloHit}s contain them along with all the other information about the hit that is necessary for later analysis of the track.
+
+\vspace{1pc}
+
+Similarly, we can define further types of tracks:
+\begin{lstlisting}[
+	language=C++,
+	label=lst_datamodel_ut_ft_tracks,
+	caption=The UT (\textit{upstream}) and FT \textit{long} tracks also contain a reference to the track they were extended from.]
+struct UtTrack {
+	std::vector<UtHit> utHits;
+	const VeloTrack* veloSegment;
+};
+struct FtTrack {
+	std::vector<FtHit> ftHits;
+	const UtTrack* utSegment;
+};
+\end{lstlisting}
+
+The algorithms and their input and output are best illustrated with a graph. The decoders return a plain vector of hits. The tracking algorithms operate on the track stubs and the hits, and write out the extended tracks and the estimated states of the particle. Note that since the \code{Track} and are split, the VELO-UT tracker is able to consume only the particular states that it needs.
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=1\textwidth]{datamodel_track_flow}
+	\end{center}
+	\caption{Algorithms and data flow with the simplified data model.}
+	\label{fig_datamodel_track_flow}
+\end{figure}
+
 
 \subsection{Results}
 
-i can present the result of my merge request
+\subsubsection{Problem mitigation}
+
+As explained in \ref{sec_datamodel_issues}, there were several issues with the original data mode.
+
+As it can be seen on the code snippets, the amount of code has been greaty reduced. Most notably, trivial getter and setter methods have been replaced by public members, and non-trivial getters have been extracted to free functions to where they are needed. Code that is not used in the context of the trigger or tracking has been removed permanently.
+
+The number of memory allocations was somewhat reduced. The states are now stored in a contiguous array instead of one dynamic block for every track, and the ancestors have also been restructured to be implicit to the track types instead of a dynamically allocated vector per track. Hits, however, are still reside in per-track heap storage.
+
+Copies of dynamically allocated objects have been elminated, since when an algorithm extends an existing track it stores a pointer to it along with the new track instead of making a copy of the track and modifying it with the extended parts.
+
+Memory access patterns are slightly better, as the states reside in a large contiguous chunk of memory. In practice, this unfortunately does not help as the algorithms don't process all states in a tight loop, but rather on a more on-by-one basis. Additionally, algorithms still use only about one third of the data in states.
+
+Thanks to the plain old data structures, vectorization is easier, however it still requires deinterleaving the arrays of structures. Fortunately, POD AOS layouts are fairly easy to turn into SOA layouts.
+
+
+\subsubsection{Performance}
+
+The removal of the unused members of the track object resulted in a very significant, 17\% gain in the best physics configuration. The realization of the split \code{Track} object between the VELO and the VELO-UT tracker alone resulted in a 4.8\% gain in overall performance. Unfortunately, I wasn't able to measure performance in different configurations and with the entire network of algorithms refactored because of project management policies.
+
 
 \subsection{Future work}
 
-i can explain what was actually implemented which is pretty much what i wanted later
+The primary goal of restructuring the data model was not actually to create a highly performant one, but to create a stepping stone for more efficient data models. 
+
+\subsubsection{Moving to structures of arrays}
+
+The new plain old data structures use an array of structures format. As an example, let's take the UT hits in an AOS layout:
+
+\begin{lstlisting}[language=C++]
+struct UtHit {
+	float x0;
+	float y0;
+	float z0;
+	float y1;
+	float dxdy;
+	float error;
+	uint32_t id;
+};
+
+using UtHits = std::vector<UtHit>;
+
+UtHits hits = { /*...*/ };
+const float& x = hits[0].x0;
+\end{lstlisting}
+
+The SOA layout contains the same data members, however, single objects cannot be used anymore:
+
+\begin{lstlisting}[language=C++]
+struct UtHits {
+	std::vector<float> x0;
+	std::vector<float> y0;
+	std::vector<float> z0;
+	std::vector<float> y1;
+	std::vector<float> dxdy;
+	std::vector<float> error;
+	std::vector<uint32_t> id;
+};
+
+UtHits hits = { /*...*/ };
+const float& x = hits.x0[0];
+\end{lstlisting}
+
+Let's take a simple algorithm that calculates the $x$ coordinate of the fiber at the $y0$ height, using the SOA layout:
+
+\begin{lstlisting}[language=C++]
+UtHits hits = { /*...*/ };
+std::vector<float> xAtY1{numHits};
+
+for (int i = 0; i<numHits; ++i) {
+	xAtY1[i] = hits.x0[i] + hits.y0[i] + hits.dxdy[i];
+}
+\end{lstlisting}
+
+The first notable difference between the SOA and AOS layouts is the memory acces pattern of the algorithm. In the SOA case (as on the code snippet), the algorithm reads consecutive elements from three vector and writes contiguous elements into a fourth vector. A cache line is generally 64 bytes, while a floating point variable is 4 bytes. When the first element of the vector is read, the CPU loads the entire cache line it is in to the L1 cache. This means that not only the floating point number we read get cached, but also the subsequent 16 values. In the SOA case, however, this is not a problem, because the subsequent 15 reads will access those very elements, which are now served from the extremely fast L1 cache. If \code{numHits} was 1024, then the CPU in total would fetch $3 \cdot (1024/16) = 192$ cache blocks from RAM and move them to L1.
+
+In the AOS case, the \code{UtHit} structure takes up $6 \cdot 4 + 4 = 28$ bytes (and it has no padding), and the CPU is reading of a large array of 28 byte blobs. The first read to \code{hits[0].x0} pull in the next cache line, similarly. However, that cache line now contains \code{hits[0].y0}, \code{hits[0].z0}, \code{hits[0].y1} and so on, up to all members of \code{hits[1]} and some of \code{hits[2]}. As all the data is pulled in to the cache, to calculate the number of caches line we simply write $1024 \cdot 28 / 64 = 448$ cache lines. Due to the data members that are not actually used for the calculations, the CPU is forced to read 2.33 times more memory.
+
+This disparity in the amount of memory read may be hidden by the calculations, but in some cases can greatly increase performance.
+
+
+\subsubsection{Vectorization}
+
+Vectorizing the above-mentioned algorithm in the AOS case can be realizing with gather instructions. We need to have the \code{x0} data member of the first 8 \code{UtHit}s in a vector register, these members are, however, 28 bytes apart, equally spaced. The CPU can execute a single gather instruction that perform the 8 reads, but this instruction is very inefficient and take only slightly less time than performing the 8 reads manually.
+
+In case of an SOA layout, the \code{x0} members form a contiguous array with no padding, thus, fetching 8 of them is as simple as reading 32 bytes into the vector register. The CPU can very efficiently execute this, taking no more time than loading a single \code{float}.
+
+Note that with the original data model, not even the AOS version of vectorization is feasible, because the members are only accessible through getter methods.
+
+Vectorization, in the ideal case, can speed up code execution by 8 times. Though this is rarely achieved in practice, it is still one of the most effective ways to optimize the individual algorithms, so the data model must be able to support it.
 
 
 %----------------------------------------------------------------------------
