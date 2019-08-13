@@ -87,26 +87,21 @@ The LHCb experiment at the high energy physics research institute CERN conducts 
 
 
 %----------------------------------------------------------------------------
+% === TABLE OF CONTENTS ===
+%----------------------------------------------------------------------------
+
+\newpage
+{
+	\small
+	\hypersetup{linkcolor=black}
+	\tableofcontents
+}
+
+%----------------------------------------------------------------------------
 % === Introduction ===
 %----------------------------------------------------------------------------
 \newpage
 \section{Introduction}\label{sec_intro}
-
-\color{red}
-describe the problem in detail \\
-specific to my thesis: \\
-environment: \\
-- CERN's goals/activity \\
-- CERN's hardware infrastructure (accelerators, experiments) \\
-- LHCb's hardware infrastructure \\
-- LHCb's software reconstruction system \\
-problem: \\
-- event rate from detector \\
-- slow trigger $\rightarrow$ loss of physics (ACTUAL PROBLEM) \\
-- by optimizing individual algorithms (in this thesis) \\
-\color{black}
-\vspace{1.5pc}
-
 
 \subsection{About CERN}\label{sec_about_cern}
 
@@ -1098,15 +1093,20 @@ The x, y and z coordinates are given for each extrapolated state, the task is to
 \end{center}
 where $x_{min}$ and $x_{max}$ are the limits of the binned range and $N$ is the number of bins. The formula can be evaluated separately for the three axes, and it can be vectorized over 8 extrapolated states.
 
-To obtain the offset and number of hits for a bin inside the partitioned array of UT hits, a lookup table that is indexed by the bin indices is available. The lookup can be either a scalar operation, or, as implemented, it can use the AVX gather instructions. For older CPUs, there is not much difference, gather instruction may be even slower, however recent Intel CPUs seem to perform better using gathers.\textcolor{red}{add source} One iteration thus returns two SIMD 8-vectors containing the offsets and the number of hits, which means it's completely vectorized.
+To obtain the offset and number of hits for a bin inside the partitioned array of UT hits, a lookup table that is indexed by the bin indices is available. The lookup can be either a scalar operation, or, as implemented, it can use the AVX gather instructions. For older CPUs, there is not much difference, gather instruction may be even slower, however recent Intel CPUs seem to perform better using gathers$^*$. One iteration thus returns two SIMD 8-vectors containing the offsets and the number of hits, which means it's completely vectorized.
+\\
+{
+	\tiny
+	\tab *: \url{https://stackoverflow.com/questions/24756534/in-what-situation-would-the-avx2-gather-instructions-be-faster-than-individually}
+}
 
 \paragraph{Filtering the range of hits} \mbox{}\vspace{0.4pc}
 
 As the hits inside the range are not ordered by for example their x coordinates, all of them have to be examined. A vectorized filtering loop described in \ref{sec_velout_filtering_vect} is employed to select nearby hits from the range. Unfortunately, the average number of hits in a bin are in the order of 5 to 15 (depending on grid resolution), so using a SIMD register width of 8 allows for only 1 or 2 iteration per loop, which is less than ideal.
 
-Storage of this hits is similar to the method described in \ref{sec_velout_filtering_vect} with the difference that the output is one big array that contains the gathered hits for all tracks. Consequently, an array of offets is is also output which tells where to find gathered hits for a track in the aggregate array.
+Storage of these hits is similar to the method described in \ref{sec_velout_filtering_vect} with the difference that the output is one big array that contains the gathered hits for all tracks. Consequently, an array of offets is is also output which tells where to find gathered hits for a track in the aggregate array.
 
-\paragraph{Double bins}
+\paragraph{Double bins}\mbox{}\vspace{0.4pc}
 
 As described in \ref{sec_velout_space_partitioning}, not a single bin but instead two adjacent bins are used. This changes the step for getting the bin indices minimally. Two lookups are performed, one for the actual bin index and another for the next or previous bin index, depending on which one the sampled coordinate is closer. (Double sampling only applies to bins, not row or panel indices.) The range is then defined by the offset of the first bin and the sum of the sizes of both bins. The hit filtering is unaffected, as it still takes an offset and a size, not caring where those come from.
 
@@ -1124,16 +1124,16 @@ With the optimized version of the Velo-UT algorithm, up to 20\% of the computati
 
 \vspace{1pc}
 
-Two options seems straightforward to reduce the number of memory allocations: allocating one large block of memory for all the contents of the SOAs, or use a memory pool instead of turning to the system memory allocator. The latter results in simpler code and make it possible to reuse existing code such as the \code{std::vector}. Additionally, the way I'm implementing SOA containers through code generation with template metaprogramming and \code{std::vector}s, extending my containers with custom allocators like the STL itself is more natural.
+Two options seems straightforward to reduce the number of memory allocations: allocating one large block of memory for all the contents of the SOAs, or using a global memory pool instead of turning to the system memory allocator. The latter results in simpler code and make it possible to reuse existing code such as the \code{std::vector}. Additionally, the way I'm implementing SOA containers through code generation with template metaprogramming and \code{std::vector}s, extending my containers with custom allocators like the STL itself is more natural.
 
 \vspace{1pc}
 
 The idea is to have a fast memory pool that it initialized at the beginning of the algorithm and torn down at the end. All memory allocations for the steps in-between are served from the pool instead of the OS memory allocator. This is achieved by initializing all \code{std::vector}s with this memory pool.
-The choice fell on a stack memory allocator.
+
 
 \vspace{1pc}
 
-The stack memory allocator work by requesting a large chunk of memory upfront from the operating system. A variable which shows the \code{offset} from the beginning of the chunk is initialized to zero.
+The choice fell on a stack memory allocator which works by requesting a large chunk of memory upfront from the operating system. A variable which shows the \code{offset} from the beginning of the chunk is initialized to zero.
 
 \begin{figure}[H]
 	\begin{center}
@@ -1167,7 +1167,7 @@ Stack allocators are wasteful, because previously requested blocks are never ind
 
 In case the allocator would run out of space, a new empty block is requested from the operating system. Even though this case is handled, the goal is to minimize the number of requests to the OS, so the initial block size is tuned so as to fit all data of the algorithm.
 
-Stack allocators are extremely fast, as all it takes to allocate a new memory block is to return the offset pointer and increment the offset -- a couple of integer arithmetic instructions. Even though with the above extension an if statement handles the special case it runs out of free space, the if rarely ever actually takes this path so the CPU should be hitting near perfect rates for branch prediction.
+Stack allocators are extremely fast, as all it takes to allocate a new memory block is to return the offset pointer and increment the offset -- a couple of integer arithmetic instructions. Even though with the above extension an if statement handles the special case when it runs out of free space, the if rarely ever actually takes this path so the CPU should be hitting near perfect rates for branch prediction.
 
 
 \subsection{Results}
@@ -1210,7 +1210,7 @@ The two most significant problems with the original algorithm are being bound by
 
 Understanding bad speculation is straightforward, if the CPU guesses to go on the \code{true} branch of an \code{if} statement and queues the upcoming instructions of that branch, but it happens that the \code{if} executes the \code{false} branch, all the queued instructions have to be cancelled.\cite{intel_vtune_docs} To alleviate this issue, one should remove branching altogether or, if not possible, make them more predictable.
 
-As the profiler suggests, the code is mostly memory bound, more specifically, L1 cache bound. According to documentation from Intel, this metric shows up when the CPU is waiting for L1 load operations when the L1 cache was hit. This can happen, for example, when a load epends on an older store. To alleviate the problem, data dependencies can be rethought and the number of memory accesses per cycles spent with computation can be reduced.\cite{intel_vtune_docs}
+As the profiler suggests, the code is mostly memory bound, more specifically, L1 cache bound. According to documentation from Intel, this metric shows up when the CPU is waiting for L1 load operations when the L1 cache was hit. This can happen, for example, when a load depends on an older store. To alleviate the problem, data dependencies can be rethought and the number of memory accesses per cycles spent with computation can be reduced.\cite{intel_vtune_docs}
 
 \begin{figure}[H]
 	\begin{center}
@@ -1267,6 +1267,8 @@ Figure \ref{fig_velout_without_alloc} shows that without any special memory allo
 
 
 \subsubsection{Comparison of Clang and GCC}
+
+i don't know, clang is better on worse code, gcc is better on better code
 
 
 %----------------------------------------------------------------------------
