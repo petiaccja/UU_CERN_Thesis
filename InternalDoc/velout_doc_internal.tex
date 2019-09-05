@@ -77,13 +77,15 @@
 \end{center}
 
 
+Please check out the \textit{Design of the improved algorithm} section of \href{https://github.com/petiaccja/UU_CERN_Thesis/blob/master/Report/uu_cern_thesis_report.pdf}{my thesis report} for a detailed description of the algorithm itself. All code is on branch \href{https://gitlab.cern.ch/lhcb/Rec/tree/pkardos_PrVeloUtOpt}{pkardos\_PrVeloUtOpt}.
+
+
 %----------------------------------------------------------------------------
 % === ARTIFACTS ===
 %----------------------------------------------------------------------------
 
 \section{Artifacts}
 
-All code is on branch \href{https://gitlab.cern.ch/lhcb/Rec/tree/pkardos_PrVeloUtOpt}{pkardos\_PrVeloUtOpt}.
 
 \subsection{New VELO-UT algorithm \& hit handler}
 
@@ -184,7 +186,9 @@ As the new algorithm no longer uses the \code{HitHandler}, the \code{PrLHCbID2MC
 
 \section{Implementation details}
 
-Please check out the \textit{Design of the improved algorithm} section of \href{https://github.com/petiaccja/UU_CERN_Thesis/blob/master/Report/uu_cern_thesis_report.pdf}{my thesis report} for a detailed description.
+\subsection{Overallocation}
+
+Note that the code relies on underlying allocators allocating space with one more entire SIMD vector available at the end of the requested block. This is because the loops don't mask the last element, just read it regardless. The allocators giving the exact number of bytes allocated likely leads to segfaults and nasty things with SIMD loops. To fix this, masked reads and writes or at least documentation to the code could be added. The code is memory bound anyways, adding a mask calculation may not have any adverse effects on performance.
 
 
 %----------------------------------------------------------------------------
@@ -193,10 +197,10 @@ Please check out the \textit{Design of the improved algorithm} section of \href{
 
 \section{Results}
 
-Straight to the point:\\
-In isolated benchmarks, on busy events, the optimized version is about 2.5 times faster than the original. In the framework, it is somewhat less. The old version produces 12300 evt/s whereas the new does 12600 with this and this configuration. \textcolor{red}{add exact number and exact config}\\
-The efficiencies are:
-\textcolor{red}{insert efficiency table from checker}
+
+In isolated benchmarks, on busy events, the optimized version is about 2.5 times faster than the original. In the framework, it is somewhat less. The old version produces 12300 evt/s whereas the new does 12600 with this and this configuration. \\
+\textcolor{red}{TODO: add exact number and exact config}\\
+\textcolor{red}{TODO: insert efficiency table from checker}
 
 
 %----------------------------------------------------------------------------
@@ -258,6 +262,12 @@ Efficiencies are slightly lower compared to the original PrVeloUT, this is proba
 \subsection{Vectorize aligned hit searching}
 
 \code{FindLinesForTrack} is a heavy CPU consumer yet it is not vectorized at all. The loops are too small and branching makes it impractical. Maybe there is a clever way? Maybe a completely different algorithm? Maybe vectorizing it over tracks instead?
+
+
+\subsection{AVX-512}
+
+Should work without problems, where the algorithm needs the vector width it is acquired from a global constexpr \code{SimdWidth} which is currently acquired from Vc. The AVX2 emulation of the compressed store should be replaced with native intrinsics. Unfortunately, Vc does not support AVX-512, and the code is written with Vc.
+
 
 
 \end{document}
