@@ -6,3 +6,11 @@
 \.vscode/
 
 *.toc
+
+InternalDoc/velout_doc_internal\.aux
+
+InternalDoc/velout_doc_internal\.log
+
+InternalDoc/velout_doc_internal\.out
+
+InternalDoc/velout_doc_internal\.synctex\.gz

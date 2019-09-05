@@ -83,7 +83,7 @@
 %----------------------------------------------------------------------------
 \section{Abstract}
 
-The LHCb experiment at the high energy physics research institute CERN conducts research to answer why the universe is made up of matter as opposed to anti-matter. Like any modern experiment, LHCb relies on a complex software infrastructure to collect and analyze the data generated from particle collisions. To filter out unimportant data before writing it to permanent storage, particle collision events have to be processed in real-time which requires enormous computing power. This paper focuses on performance optimization of parts of the software to make it performant in multi-threaded environments with modern, superscalar processors. Vectorization, memory management and cache efficient algorithms are the primary methods to achieve a significant speedup. Improvements by this work combined with further software optimziations and hardware upgrade allows the infrastructure to handle 30 times the throughput in order to maximize the physics research potential of the experiment.
+The LHCb experiment at the high energy physics research institute CERN\cite{cern_about} conducts research to answer why the universe is made up of matter as opposed to anti-matter. Like any modern experiment, LHCb relies on a complex software infrastructure to collect and analyze the data generated from particle collisions. To filter out unimportant data before writing it to permanent storage, particle collision events have to be processed in real-time which requires enormous computing power. This paper focuses on performance optimization of parts of the software to make it performant in multi-threaded environments with modern, superscalar processors. Vectorization, memory management and cache efficient algorithms are the primary methods to achieve a significant speedup. Improvements by this work combined with further software optimziations and hardware upgrade allows the infrastructure to handle 30 times the former throughput in order to maximize the physics research potential of the experiment.
 
 
 %----------------------------------------------------------------------------
@@ -105,7 +105,7 @@ The LHCb experiment at the high energy physics research institute CERN conducts 
 
 \subsection{About CERN}\label{sec_about_cern}
 
-CERN (European Organization for Nuclear Research) is an international high energy experimental physics research organization situated near Geneva, on the Franco-Swiss border. CERN is host to the world's largest particle accelerator and numerous experiments which aim to provide a better understanding of the fundamental laws of the universe.
+CERN (European Organization for Nuclear Research) is an international high energy experimental physics research organization situated near Geneva, on the Franco-Swiss border. CERN's research is based around its infrastructure of several particle accelerators, including the world's largest particle accelerator. Physics research data is obtained from colliding the accelerated particles, and is meant to probe the fundamental laws of the universe. In general, research is organized into \textit{experiments}, each of which examines a particular physics phenomenon. Experiments are using the particle accelerator infrastructure, but have their on devices for the experiment's specific goals.
 \cite{cern_about}
 
 
@@ -113,7 +113,7 @@ CERN (European Organization for Nuclear Research) is an international high energ
 
 \subsubsection{Idea and purpose of accelerators}\label{sec_part_accel_idea}
 
-Particle accelerators accelate charged particles to high velocities using magnetic and electric fields. The particles are made to collide with a stationary target or each other (particles of opposing directions having a frontal collision), which results in a shower of new-born particles flying away from the collision point. In high-energy collisions, exotic particles that are normally not seen are born, and their properties can be examined.
+Particle accelerators accelerate charged particles to high velocities using magnetic and electric fields, then the particles are made to collide with a stationary target or other particles going in the opposite direction. Einstein's famous formula, $E=mc^2$ describes how energy can be converted into matter and vice versa. In a collision, the mass of the colliding particles and their kinetic energy gets converted into new particles in a quantum process. The new particles also have some kinetic energy, thus fly away from the collision point. Thanks to the high energy of the collision, heavy particles that are otherwise extremely rare also get created and scientists can examine their properties in a controlled environment.
 
 \subsubsection{Theory of operation}\label{sec_part_accel_theory}
 
@@ -134,7 +134,7 @@ Particle accelerators can be circular or linear. Figure \ref{fig_part_accel_sche
 	\item Extraction pipe: once the particles are fast enough, they are extracted from the circular beam pipe to collide with a stationary target.
 \end{itemize}
 
-The particle is at first injected to the beam pipe at a low energy. Thanks to the deflecting magnets, it keeps revolving in the beam pipe for thousand of revolutions. Each turn, particles get boosted by the accelerating cavities as they pass by, increasing their energy. When particles reach their maximum energy, which is determined by the construction and size of the accelerator, they are extracted from the beam pipe to collide with a stationary target.
+The particle is at first injected to the beam pipe at a low energy. Thanks to the deflecting magnets, it keeps revolving in the beam pipe for thousand of revolutions. Each turn, particles get boosted by the accelerating cavities as they pass by, increasing their energy. When particles reach their maximum energy, which is determined by the strength of the steering magnets and the circumference of the accelerator, they are extracted from the beam pipe to collide with a stationary target.
 
 It is not individual particles that revolve around the accelerator, rather, it's a swarm of millions of particles distributed throughout the entire circle. The distribution of the particles is not uniform. The particles group into \textit{bunches} which are equally spaced along the circle.
 
@@ -145,7 +145,7 @@ Linear accelerators contain the same functional elements as circular ones, but t
 
 \subsubsection{Particle colliders}\label{sec_part_collider}
 
-Colliders have two beam pipes right next to each other in the circular tunnel. The two beams circle in the opposing directions. At some specific points, the beam pipes are crossed, and the intersecting beams' bunches collide with each other.
+Colliders have two beams right next to each-other, but the particles are revolving in the opposite directions. This is achieved either by having two beam pipes (as in the LHC) or the two beams sharing the same beam pipe (like in LEP). At some specific points, the beams are crossed and the bunches collide with each other. It is important to mention that even though a bunch contains about $1.2\cdot 10^11$ protons\cite{lhc_facts_and_figures} in case of the LHC, the protons are so small thus the bunch is so sparse that only about 40 proton-proton collisions occur (in case of the ATLAS experiment) per bunch collision.
 
 
 \subsection{The accelerator complex}\label{sec_accel_complex}
@@ -174,7 +174,7 @@ Figure \ref{fig_lhcb_geometry} shows the LHCb detector from the side, the two be
 
 As seen on the labels, the detector consists of multiple layers of sub-detectors. Each layer has a hole in the center to let the beam pipes through. The two particle beams cross each other inside the Vertex Locator (VELO, at the right in yellow). As opposed to most other detectors, this one only analyzes the products of the collision in a narrow cone away from the VELO. The parts from RICH to M5 could be mirrored around the VELO to have two cones that touch each other by the tip, however it is not done for financial reasons.
 
-The goal of the LHCb detector is the same as for all other detectors: reconstruct the paths and types of the particles. Even though full reconstruction uses all sub-detectors, we are only interested in partial reconstruction that can be done in real-time. This only involves the VELO, the UT (in orange, left of VELO) and the FT (SciFi Tracker, in the middle in orange).
+The goal of the LHCb detector is the same as for all other detectors: reconstruct the paths and types of the particles. Even though full reconstruction uses all sub-detectors, we are only interested in partial reconstruction that can be done in real-time. This only involves the VELO, the UT (in orange, right of VELO) and the FT (SciFi Tracker, in the middle in orange).
 
 
 \subsubsection{Coordinate system}\label{sec_coordinate_system}
@@ -199,17 +199,17 @@ The LHCb detector's coordinate system is used for calculations. The Z axis point
 
 Figure \ref{fig_lhcb_lbevent_collision} shows one particle collision event's results. The particles that were born in the collision are shown by the orange lines. The three aforementioned detectors, the VELO, UT and FT, can be identified by the origin of the orange particles, the pink cloud of lines and the bright blue cloud lines, respectively. The green and yellow cubic illustrations on the far-end of the detector belong to other sub-detectors, and are out of the scope of this paper.
 
-The VELO is a small detector, measures less than a meter in length. It is a silicon pixel detector, which looks much like a modern CCD camera: a rectangular array of pixels which detect light (or in this case, particles) that hit it. The difference is that particle detectors don't absorb the particle, rather, it passes through largely undisturbed. Additionally, the VELO consists of 26 such CCD-like rectangles, instead of just one.
+The VELO is a small detector, it measures less than a meter in length. It is a silicon pixel detector, which looks much like a modern CCD camera: a rectangular array of pixels which detect light (or in this case, particles) that hit it. The difference is that particle detectors don't absorb the particle, rather, it passes through largely undisturbed. Additionally, the VELO consists of 26 such CCD-like rectangles, instead of just one.
 
 \begin{figure}[H]
 	\begin{center}
 		\includegraphics[width=0.5\textwidth]{detector_velo_real}
 	\end{center}
-	\caption{The 26 layers of the VELO. The pixels reside on the silver area, the PCB around contains the reading electronics, and the wedge at the top-center of the silver area is where the beam passes through.}
+	\caption{The 26 layers of one half of the VELO. The pixels reside on the silver area, the PCB around contains the reading electronics, and the wedge at the top-center of the silver area is where the beam passes through.}
 	\label{fig_detector_velo_real}
 \end{figure}
 
-The UT is a silicon strip detector which consist long fibers which act much like a pixel as they also signal if a particle passes through them at any point along their length. A fiber of the UT is generally 10 centimeters long, and has a width of only 192 micrometers. This means that while on one axis, the particles position can be told with great accuracy, on the other axis the uncertainty if 10 centimeters. The entire detector measures about 1.7 meters in width and 1.4 meter in height.
+The UT is a silicon strip detector which consists of long fibers which act much like a pixel as they also signal if a particle passes through them at any point along their length. A fiber of the UT is generally 10 centimeters long, and has a width of only 192 micrometers. This means that while on one axis, the particles position can be told with great accuracy, on the other axis the uncertainty if 10 centimeters. The entire detector measures about 1.7 meters in width and 1.4 meter in height.
 
 Similarly to the UT, the FT is also a silicon strip detector, but the length of its fibers is 2.5 meters. This means the 5 meter tall detector needs only two fibers to cover the full height.
 
@@ -238,14 +238,14 @@ The LHC has 2808 bunches of protons in the accelerator at a time, for both beams
 
 \subsubsection{Real-time reconstruction and triggering}\label{sec_trigger_what}
 
-Most of the 30 million events that occur every second are absolutely uninteresting, with no exotic particles of interest being created. On the other hand, each event amounts to a significant amount of data which is a challenge to store. To reduce the amount of data written to permanent storage, each event is processed in real-time to determine weather it is interesting or not. Uninteresting events are simply dropped, the interesting ones are stored long-term for offline analysis. The act of deciding if an event has to be stored is called \textit{triggering}. The real-time processing of events is a simplified method that relies on the VELO, UT and FT detectors as described previously.
+The vast majority of the 30 million events that occur every second are absolutely uninteresting, with no exotic particles of interest being created. On the other hand, so many events together produce a significant amount of data which is a challenge to store. To reduce the amount of data written to permanent storage, each event is processed in real-time to determine weather it is interesting or not. Uninteresting events are simply dropped, the interesting ones are stored long-term for offline analysis. The act of deciding if an event has to be stored is called \textit{triggering}. The real-time processing of events is a simplified method that relies on the VELO, UT and FT detectors as described previously.
 
 
 \subsection{The 2019/20 upgrade of LHCb}\label{sec_lhcb_upgrade}
 
 The LHC shuts down for maintenance for two years from the end of 2018. The LHCb detector also undergoes maintenance and upgrade during that time, where the VELO is upgraded and the old TT is entirely replaced by the UT.
 
-The pre-upgrade detector does the real-time event processing in two stages. The first stage employs FPGAs to do a preselection, which cuts down the 30 million events per second to roughly 1 million per second. The second stage uses a large farm of CPUs to do finer reconstruction and final trigger decision. During the upgrade, however, the FPGAs will be retired, and the CPU farm has to take the whole load of 30 million events per second. This puts a stress on the software stack that it was not written to handle, and needs a significant overhaul.
+The pre-upgrade detector did the real-time event processing in two stages. The first stage employed FPGAs to do a preselection, which cut down the 30 million events per second to roughly 1 million per second. The second stage used a large farm of CPUs to do finer reconstruction and final trigger decision. During the upgrade, however, the FPGAs will be retired, and the CPU farm now has to take the whole load of 30 million events per second. This puts a stress on the software stack that it was not written to handle, and needs a significant overhaul.
 
 \begin{figure}[H]
 	\centering
@@ -276,22 +276,22 @@ The pre-upgrade detector does the real-time event processing in two stages. The 
 	\label{fig_algorithms_brunel}
 \end{figure}
 
-The real-time processing software consists of algorithms which do a specific piece of the reconstruction of the particle paths. In addition to the reconstruction, there are other algorithms which do the selection of interesting events. Since the selection algorithms are generally a lot faster than reconstruction algorithms, they are excluded them from this discussion.
+The real-time processing software consists of algorithms which do a specific piece of the reconstruction of the particle paths. In addition to the reconstruction, there are other algorithms which do the selection of interesting events. Since the selection algorithms are generally a lot faster than reconstruction algorithms, they are excluded from this discussion.
 
 The general principle behind reconstruction is that a list of hits (where a pixel or silicon strip was hit) are given, and regular alignment of the hits indicate the path of the particle: hence the name \textit{pattern recognition}. Once all particles have been found by gathering the hits they created, they can be identified and fed into the selection decision making.
 
-The information on which pixels and strips were hit comes straight from the detectors, in a heavily compressed binary format. It has to be first decoded to give the position of the individual strips, a process done by the \textbf{VELO decoder}, \textbf{UT decoder} and \textbf{FT decoder}.
+The information on which pixels and strips were hit comes straight from the detectors, in a heavily compressed binary format. It has to be first decoded to obtain the position of the individual strips, a process done by the \textbf{VELO decoder}, \textbf{UT decoder} and \textbf{FT decoder}.
 
-Once pixel hit positions are known by their global X,Y,Z coordinates, the \textbf{VELO tracker} find hits that align to form a straight line. It estimates the starting position and the slope of the line. The line is extended into the UT, where the \textbf{VELO-UT tracker} searches silicon strip hits that are very close to the extended line. From the slight offset of the strip hits from the extended line, the VELO-UT tracker can estimate the amount of bending in the magnetic space, thus the momentum of the particle. The last step of tracking is done by the \textbf{forward tracker}, which uses the momentum estimate to extrapolate the bent path of the particle through the magnet, to the layers of the FT. It then finds silicon strips of the FT which align into a straight line (no magnetic field in the FT either), the line having the right direction and position to be a possible path the particle took after going through the magnet.
+Once pixel hit positions are known by their global X,Y,Z coordinates, the \textbf{VELO tracker} finds hits that align to form a straight line. It estimates the starting position and the slope of the line. The line is extended into the UT, where the \textbf{VELO-UT tracker} searches silicon strip hits that are very close to the extended line. From the slight offset of the strip hits from the extended line, the VELO-UT tracker can estimate the amount of bending in the magnetic space, thus the momentum of the particle. The last step of tracking is done by the \textbf{forward tracker}, which uses the momentum estimate to extrapolate the bent path of the particle through the magnet, to the layers of the FT. It then finds silicon strips of the FT which align into a straight line (no magnetic field in the FT either), the line having the right direction and position to be a possible path the particle took after going through the magnet.
 
-Finally, the \textbf{fitter} uses all the hits to align the particles path more closely with the position of the hits. In principle, it works similarly to a curve fitting solution, but uses a Kalman filter internally. Having the most accurate path, the decision is made to keep or drop the event.
+Finally, the \textbf{fitter} uses all the hits to align the particles path more closely with the position of the hits. In principle, it works similarly to a curve fitting solution, but uses a Kalman filter\cite{kalman_filter_wiki}\cite{kalman_filter_lhcb} internally. Having the most accurate path for each particle, the decision is made to keep or drop the event. (Note that \textit{fitter} and \textit{filter} are used interchangably, as the algorithm falls into both categories.)
 
 
 \subsection{The aim of this thesis project}
 
 As mentioned, the abandoning of the hardware trigger stage highly increases the load on the software trigger. The main goal of this project is to optimize the current software trigger to make it about 3 times as fast. Failure to do so will result in valuable events being dropped, thus reducing the physics potential of the experiment.
 
-Current computing hardware has changed significantly from the ones the software trigger was originally made for. The even larger gap between memory and CPU speeds demands a more efficient use of CPU caches. Additionally, CPU instruction sets now include SIMD operations, which can, for example, do 4 floating point operations in place of one in the same amount of time. Furthermore, modern CPUs have a complex logic for branch prediction and instruction pipelining, which require code to be tailored to serve them.
+Current computing hardware has changed significantly from the ones the software trigger was originally made for. The even larger gap between memory and CPU speeds demands a more efficient use of CPU caches. Additionally, CPU instruction sets now include SIMD operations, which can, for example, do 4 or more floating point operations in place of one in the same amount of time. Furthermore, modern CPUs have a complex logic for branch prediction and instruction pipelining, which require code to be tailored to serve them.
 
 To exploit the full capability of current hardware, not only individual pieces of the trigger software need to be changed, but the global data flow also has to be rethought and optimized.
 
@@ -304,24 +304,26 @@ During this thesis project, I will be helping the LHCb collaboration to reach it
 \newpage
 \section{Choosing optimization targets}
 
-As mentioned in \ref{sec_reco_sw_overview}, the reconstruction consists of individual algorithms which account for the bulk of the computation. (Scheduling the algorithms and culling decisions account for a much smaller CPU load.) It is straightforward to first start optimizing the algorithms which take the largest chunk of available computing power.
+Software is no exception to the 80-20 rule (and its variations), and usually 20\% of the code consumes 80\% of the processor time. It is therefore logical to target optimization efforts on these so-called \textit{hotspots}.
+
+Consquently, the first step of optimization is to identify hotspots, for which developers leverage different \textit{profilers}. LHCb's software has a built-in profiler which breaks down execution time to the level of individual algorithms (see \ref{sec_reco_sw_overview}) that make up the particle path reconstruction. In addition to the built-in profiler, tools such as Intel's VTune Amplifier can show a more detailed view of load distribution that breaks down execution time to the level of C/C++ functions.
 
 \begin{figure}[H]
 	\begin{center}
 		\includegraphics[width=0.6\textwidth]{algo_usage_original_bestphys}
 	\end{center}
-	\caption{Workload split among HLT1 algorithms.}
+	\caption{Workload distribution among HLT1 algorithms, mid 2018}
 	\label{fig_algo_usage_choice}
 \end{figure}
 
-Looking at figure \ref{fig_algo_usage_choice}, we can see that the parametrized Kalman fitter takes nearly half the CPU budget, followed by the forward tracking which takes roughly a quarter. Based on this and initial performance profiling of the algorithms for hotspots, I decided to first examine and optimize the Kalman fitter. 
+Figure \ref{fig_algo_usage_choice} shows that the parametrized Kalman fitter takes 47.1\% of the total execution time, followed by the forward tracking which takes roughly a quarter. Based on this and rough profiling with VTune, I decided that the Kalman fitter is the best target for optimization.
 
 
 %----------------------------------------------------------------------------
 % === PARAMETRIZED KALMAN ===
 %----------------------------------------------------------------------------
 \newpage
-\section{Parametrized Kalman Fitter}
+\section{Parametrized Kalman Fitter}\label{sec_kalman_main}
 
 As described in \ref{sec_reco_sw_overview}, the track is reconstructed incrementally, start with velo hits, extended by UT hits and finally adding the FT hits. This process, however, is not so accurate. This manifests itself in the creation of \textit{ghost tracks} and missed tracks, and generally, tracks are only roughly aligned with the hits they were made from. Ghost tracks are tracks that did not exist in the real collision, they are merely artifacts of the reconstruction algorithms. As such, ghost tracks are highly undesirable, but the Kalman fitter helps to weed them out. 
 The Kalman fitter basically refines the rough tracks that are spit out by preceding algorithms. The state of a particle can be described by its position, direction, and the quotient of its charge and momentum. The Kalman fitter first estimates the particle's state at its birth position based on the VELO hits alone. After that, it extrapolates the state of the particle to the next hit, or in other words, simulates the particle's travel until the next hit using the laws of physics. The new, \textit{predicted} state will have some deviation from the \textit{observed} state (that is, the hit), however, the Kalman fitter can make a mathematically optimal estimate for the true state based on the prediction and observation. The very new optimal state estimate will then be extrapolated to the next hit again, and this repeats for all the hits of the track.
@@ -338,7 +340,7 @@ As a result, the estimated state or path of the particle aligns more closely wit
 	\label{fig_kalman_vtune_initial}
 \end{figure}
 
-Figure \ref{fig_kalman_vtune_initial} shows what fraction of the CPU time is spent in individual functions of the code. We can nicely see how the theoretical steps of the Kalman fitting map to the functions:
+Figure \ref{fig_kalman_vtune_initial} shows what fraction of the CPU time is spent in individual functions of the Kalman fitter's code. We can nicely see how the theoretical steps of the Kalman fitting map to the functions:
 \begin{itemize}
 	\item LoadHits: acquires position and measurement error of hits
 	\item PredictState: extrapolates the state to the next hit
@@ -360,7 +362,7 @@ Careful examination reveals the way hits are loaded through the so-called \texti
 	\label{fig_kalmanfit_loadhits_schematic}
 \end{figure}
 
-When a particle hits a detector, the identifier of the element of the detector that was hit is recorded. (Detector elements are analogous to the pixels of a digital CCD camera.) These elements are basically unambiguously identified by the so-called \textit{LHCbIDs}, so it is enough to store the IDs inside the Track object and all information (such as location of the hit, measurement error) can be recovered. 
+When a particle hits a detector, the identifier of the element of the detector that was hit is recorded. (Detector elements are analogous to the pixels of a digital CCD camera.) These elements are basically unambiguously identified by the so-called \textit{LHCbIDs} (represented by an integer), so it is enough to store the IDs inside the Track object and all information (such as location of the hit, measurement error) can be recovered. 
 
 Over the years however, this system grow unnecessarily complex resulting in a dramatic slowdown. Clusters, containing some basic information about the hit, such as its location, are stored inside measurement providers as a large array. In order to find the cluster that corresponds to the ID, this whole array is searched linearly. Once the cluster is found, a \textit{Measurement} object is allocated on the heap and initialized from it. Finally, another object, called a \textit{trajectory}, is queried from the measurement, from which the data actually required can be extracted. The storage of clusters and creation of measurements is handled by \textit{MeasurementProviders}. Additionally, we can distinguish separate measurement objects for the Velo, UT and FT hits.
 
@@ -418,7 +420,7 @@ Notice how the IDs are kept: the unfortunate reason for this is that other algor
 	\label{fig_kalmanfit_simplified_overall_breakdown}
 \end{figure}
 
-Figure \ref{fig_kalmanfit_simplified_overall_breakdown} shows that with the new data model, the previous CPU hog, LoadHits, has completely disappeared, now accounting only for 2\% of the fitting.
+Figure \ref{fig_kalmanfit_simplified_overall_breakdown} shows that with the new data model, the previous CPU hog, LoadHits, has completely disappeared, now accounting only for 1.2\% of the fitting.
 
 As the parametrized Kalman fitter takes about 47\% of the entire reconstruction sequence, and about 50\% of the fitter's computing load was removed by the above described code changes, we would expect an overall speedup of 31\%. When measured, throughput increases from 4450 events processed per second to about 4850 events/second, or about 9.2\%. As this is way less than the predicted 31\%, the question arises as to where the performance is gone. First of all, three new data members were added to the Track to store the new TrackHits, and nothing has been removed. As Tracks are copied in the code, the three std::vectors also have to be copied, which involves dynamic memory allocation (a well-known performance drag) and memory copying. Second, part of the code that produces the TrackHits from other objects was not removed, but merely moved out of the fitter to other algorithms. The data conversion to TrackHits, along with adding the TrackHits to the vectors and allocating the memory of the vectors adds additional overhead. In order to achieve the projected performance improvements, these issues have to be fixed and optimized.
 
@@ -440,7 +442,7 @@ To trade physics quality for performance, event culling decisions can be made ea
 	\label{fig_algo_usage_original_bestthru}
 \end{figure}
 
-Figure \ref{fig_algo_usage_original_bestthru} shows the in the best throughput case, the pixel tracking algorithm takes the most amount of time. This algorithm is responsible for finding particle track stubs from only Velo hits, and was negatively affected by my fitter optimizations.
+Figure \ref{fig_algo_usage_original_bestthru} shows the best throughput case where the pixel tracking algorithm takes the most amount of time. This algorithm is responsible for finding particle track stubs from only Velo hits, and was negatively affected by my fitter optimizations.
 
 \begin{figure}[H]
 	\begin{center}
@@ -513,7 +515,7 @@ Another interesting figure to look at is how the weight of the parameterized Kal
 	\label{fig_kalmanfit_results_algousage}
 \end{figure}
 
-In light of the code changes and their effect on the overall performance, we can safely say that code should strive to do the data transformations in the simplest possible way. Adding extra layers on top, if not done carefully using zero-cost abstractions, will dramatically slow the code down. In performance critical applications, a good data oriented design can give far better benefits that assembly-level micro-optimizations. Additionally, a good data structures opens up the doors to more effective micro-optimizations, such as vectorization.
+In light of the code changes and their effect on the overall performance, we can safely say that code should strive to do the data transformations in the simplest possible way. Adding extra layers on top, if not done carefully using zero-cost abstractions, will dramatically slow the code down. In performance critical applications, a good data oriented design can give far better benefits than assembly-level micro-optimizations. Additionally, a good data structures opens up the doors to more effective micro-optimizations, such as vectorization.
 
 
 %----------------------------------------------------------------------------
@@ -522,11 +524,11 @@ In light of the code changes and their effect on the overall performance, we can
 \newpage
 \section{Streamlining the computation's data model}
 
-While profiling the Kalman filter, I had to change the data model by adding additional data to the \code{Track} which had adverse effects of performance. As the changes were temporary, the performance issue wasn't a concern, but the general performance of the data model was. Over the years the code accumulated quite some unnecessary data and code which resulted in issues with performance and maintainability. This chapter explains how data structures can be streamlined to better accodomate modern computer architectures.
+While profiling the Kalman filter, I had to change the data model by adding additional data to the \code{Track} which had adverse effects on performance (see \ref{sec_kalman_main}). As the changes were temporary, the performance issue wasn't a concern, but the general performance of the data model was. Over the years the code accumulated quite some unnecessary data and code which resulted in issues with performance and maintainability. This chapter explains how data structures can be streamlined to better accodomate modern computer architectures.
 
 \subsection{The existing data model}
 
-The algorithms that constitute the processing chain are illu strated on figure \ref{fig_algorithms_brunel}. There are two main categories of data passed from one algorithm to the other: hits and tracks. All data related to a track is represented by the \code{Track} class, and in general, \code{std::vector}s of \code{Track}s are passed from one algorithm to the next. The \code{Track} was designed to be a generic object that is able to represent all the different types of tracks, for example a \textit{velo track} or a \textit{forward track}.
+The algorithms that constitute the processing chain are illustrated on figure \ref{fig_algorithms_brunel}. There are two main categories of data passed from one algorithm to the other: hits and tracks. All data related to a track is represented by the \code{Track} class, and in general, \code{std::vector}s of \code{Track}s are passed from one algorithm to the next. The \code{Track} was designed to be a generic object that is able to represent all the different types of tracks, for example a \textit{velo track} or a \textit{forward track}.
 
 \begin{lstlisting}[language=C++,caption=Simplified code of the \code{Track} class.,label=lst_datamodel_trackv2_simple
 ]
@@ -553,7 +555,7 @@ Multiple algorithms have their own internal data structures for their computatio
 
 \subsubsection{Overgeneralization and code bloat}
 
-The \code{Track} object was meant to store every kind of track for any purpose. It is used by all the tracking algorithms, including the VELO, UT and FT tracking. Additionally, it contains derived values of the tracking, such as the estimated particle states, but also information related to final fitting. Most algorithms, however, access only a small fraction of this data, and make expensive checks to verify if the particular data they need is inside the \code{Track}. The \code{Track} is a prime example of the \textit{god class} anti-pattern, which in this case not only compromises code quality but also negatively affects performance due to its heavy weight.
+The \code{Track} object was meant to store every kind of track for any purpose. It is used by all the tracking algorithms, including the VELO, UT and FT tracking. Additionally, it contains derived values of the tracking, such as the estimated particle states, but also information related to final fitting. Most algorithms, however, access only a small fraction of this data, and make expensive checks to verify if the particular data they need is inside the \code{Track}. The \code{Track} is a prime example of the \textit{god class} anti-pattern\cite{god_class_wiki}, which in this case not only compromises code quality but also negatively affects performance due to its heavy weight.
 
 \subsubsection{Memory allocations}
 
@@ -565,7 +567,7 @@ Due to the framework's implementation, each algorithm writes its output (a \code
 
 \subsubsection{Inefficient memory access patterns}
 
-Dynamically allocated memory reduces spatial locality of the data, which pollutes the CPU cache when an entire cache block is loaded for a much smaller piece of data. Additionally, lack of locality increases the chance of cache misses and disables prefetching techniques, negatively affecting performance. In this particular case, locality is an issue on the level of an individual \code{Track} which stores its data in dynamically allocated blocks and also on the level of the vector of \code{Track}s, which could have an SOA layout to store the \code{State}s of all tracks in the same vector.
+Dynamically allocated memory reduces spatial locality of the data, which pollutes the CPU cache when an entire cache block is loaded for a much smaller piece of data. Additionally, lack of locality increases the chance of cache misses and disables prefetching techniques, negatively affecting performance. In this particular case, locality is an issue on the level of an individual \code{Track} which stores its data in dynamically allocated blocks and also on the level of the vector of \code{Track}s, which could have a structure of array (SOA) layout to store the \code{State}s of all tracks in the same vector.
 
 \subsubsection{Cannot be vectorized}
 
@@ -667,7 +669,7 @@ A similar scheme can be applied to both the VELO and the FT hits.
 
 \subsubsection{Tracks}
 
-First, we have to realize that the \code{Track} class breaks the single responsibility principle by representing multiple objects of multiple purposes under the same class. Second, the only thing that's necessary from the \code{Track} object illustrated in code snippet \ref{lst_datamodel_trackv2_simple} is the \code{LHCbID}s (or hits), the \code{State}s and the information as to which UT track came from which VELO track (\code{ancestors}).
+First, we have to realize that the original \code{Track} class breaks the single responsibility principle by representing multiple objects of multiple purposes under the same class. Second, the only thing that's necessary from the \code{Track} object illustrated in code snippet \ref{lst_datamodel_trackv2_simple} is the \code{LHCbID}s (or hits), the \code{State}s and the information as to which UT track came from which VELO track (\code{ancestors}).
 
 In light of this, it makes sense to separate the states and the sets of hits into two separate \code{vector}s of the same size, and the output of the VELO tracking algorithm becomes
 \begin{lstlisting}[language=C++]
@@ -732,7 +734,7 @@ Copies of dynamically allocated objects have been elminated, since when an algor
 Memory access patterns are slightly better, as the states reside in a large contiguous chunk of memory. In practice, this unfortunately does not help as the algorithms don't process all states in a tight loop, but rather on a more on-by-one basis. Additionally, algorithms still use only about one third of the data in states.
 
 \vspace{1pc}
-Thanks to the plain old data structures, vectorization is easier, however it still requires deinterleaving the arrays of structures. Fortunately, POD AOS layouts are fairly easy to turn into SOA layouts.
+Thanks to the plain old data (POD) structures, vectorization is easier, however it still requires deinterleaving the arrays of structures (AOS). Fortunately, POD AOS layouts are fairly easy to turn into SOA layouts.
 
 
 \subsubsection{Performance}
@@ -818,14 +820,14 @@ Vectorization, in the ideal case, can speed up code execution by 8 times. Though
 \section{Vectorizing and optimizing the Velo-UT algorithm}\label{sec_opt_velout}
 
 As highlighted in \ref{sec_reco_sw_overview}, the Velo-UT algorithm extends the straight line tracks created in the VELO tracking algorithm by assigning UT silicon strip hits to it. More importantly, the Velo-UT algorithm provides a coarse estimate for the momentum of the particle, allowing efficient tracking in the FT.
-The algorithm takes roughly 10 percent of the pipeline, so optimizing it is not expected to provide a high overall gain in performance, however its code is outdated and is in much need of an overhaul. My goal for the Velo-UT was to streamline the code to adhere to modern coding practices, and in the meantime, to make the algorithm play well with modern CPU architectures. In light of this, I was aiming at a highly SIMD-vectorized code, which operates with SOA data structures
+The algorithm takes roughly 14 percent of the pipeline, so optimizing it is not expected to provide a high overall gain in performance, however its code is outdated and is in much need of an overhaul. My goal for the Velo-UT was to streamline the code to adhere to modern coding practices, and in the meantime, to make the algorithm play well with modern CPU architectures. In light of this, I was aiming at a highly SIMD-vectorized code, which operates with SOA data structures
 
 
 \subsection{Geometry of the UT detector}
 
 \begin{figure}[H]
 	\begin{center}
-		\includegraphics[width=0.7\textwidth]{detector_ut_geometry}
+		\includegraphics[width=0.9\textwidth]{detector_ut_geometry}
 	\end{center}
 	\caption{Illustration of the key elements of the UT hardware.}
 	\label{fig_ut_geometry}
@@ -930,19 +932,21 @@ In addition to performance problems, as the code is not clearly structured, opti
 	\centering
 	\begin{subfigure}{.5\textwidth}
 		\centering
-		\includegraphics[width=.7\linewidth]{velout_gatherhits_orig_uarch}
+		\includegraphics[width=\linewidth]{velout_gatherhits_orig_uarch}
 		\caption{Microarchitecture usage of gathering\\ hits in the original code}
 		\label{fig_velout_branch_example_sub1}
 	\end{subfigure}%
 	\begin{subfigure}{.5\textwidth}
 		\centering
-		\includegraphics[width=.7\linewidth]{velout_gatherhits_new_uarch}
+		\includegraphics[width=\linewidth]{velout_gatherhits_new_uarch}
 		\caption{Microarchitecture usage of gathering\\ hits in the refurbished code}
 		\label{fig_velout_branch_example_sub2}
 	\end{subfigure}
-	\caption{Almost 30\% of the instructions go to waste due to CPU branch mispredictions before refurbishing the code. (Illustration, in-depth analysis later.)}
+	\caption{Microarchitecture usage characteristics before and after rewriting the code.}
 	\label{fig_velout_branch_example}
 \end{figure}
+
+Figure \ref{fig_velout_branch_example} shows the overall CPU microarchitecture usage of the current hit gathering compared to the new one. The low percentage of retiring instructions (35.5\%) is alarming. Additionally, 28.1\% of instructions are dropped due to branch mispredictions, which confirms the source code analysis that flow control is excessively complex and shows how much it impacts performance.
 
 
 \subsubsection{Finding aligned hits}
@@ -1053,7 +1057,7 @@ The step illustrated on figures Figures \ref{fig_velout_opt_datastruct_flow_p1} 
 
 The filtering algorithm takes a set of States that describe the VELO tracks, and decides which ones are possible to be be extended into a VELO-UT track. Thanks to the restructuring of the overall data structures by my colleagues, the Velo-UT algorithm now only receives so called \textit{forward tracks}\textcolor{red}{ref to track types} that point towards the UT. Consequently, the filtering must only remove tracks that fall out of the acceptance of the UT, that is, miss all the panels of the UT and cannot produce any UT hits.
 
-Rephrasing the specification in computing terms, for the vector of a states, a vector of booleans has to be produced where each boolean indicates weather to keep the corresponding state, and then the vector of states needs to be collapsed to a new vector that only contains accepted states. Using SIMD, on can easily take 8 elements (on AVX ISA) from the rows of the states, thus do calculations on 8 states at once to produce 8 booleans. It is possible to efficiently leverage Intel's AVX2 instruction set to do the pruning of the 8 items at a good performance\cite{lemire_simd_prune}. First, the items of the 8-vector are permuted in order to bring the selected elements to the front of the vector and move the unused items at the back. Second, an unaligned memory store operation writes the entire 8 vector to the output data structure at a specific offset. For the next write, the offset is increased by the popcount (number of the selected items), which means the next write will simply overwrite the unselected items of the current operation.
+Rephrasing the specification in computing terms, for the vector of a states, a vector of booleans has to be produced where each boolean indicates weather to keep the corresponding state, and then the vector of states needs to be collapsed to a new vector that only contains accepted states. Using SIMD, on can easily take 8 elements (on AVX ISA) from the rows of the states, thus do calculations on 8 states at once to produce 8 booleans. It is possible to efficiently leverage Intel's AVX2 instruction set to do the pruning of the 8 items at a good performance\cite{lemire_simd_prune}. First, the items of the 8-vector are permuted in order to bring the selected elements to the front of the vector and move the unused items at the back. Second, an unaligned memory store operation writes the entire 8 vector to the output data structure at a specific offset. For the next write, the offset is increased by the popcount (number of the selected items), which means the next write will simply overwrite the unselected items of the current operation. (See figure \ref{fig_velout_opt_simd_filter}.)
 
 \begin{figure}[H]
 	\begin{center}
@@ -1080,7 +1084,7 @@ To recap, the gathering of hits must iterate over each extrapolated state, obtai
 The problem can be split into two parts:
 \begin{enumerate}
 	\item Getting panel, row and bin indices: as this step is the same, branchless pure computation (in theory) for each track, it can be perfectly vectorized.
-	\item Iterating over the range of hits: vectorization simply over tracks is not possible, compiling a contiguous array of all hit candidates of all tracks seems expensive (although best for vectorization), so what's left is vectorizing over the range of hits but going scalar over tracks. The problem is that the number of hits in a bin is less than would be ideal for vector register of width 8, so a lower efficiency if expected.
+	\item Iterating over the range of hits: vectorization simply over tracks is not possible, compiling a contiguous array of all hit candidates of all tracks seems expensive (although best for vectorization), so what's left is vectorizing over the range of hits but going scalar over tracks. The problem is that the number of hits in a bin is less than would be ideal for vector register of width 8, so a lower efficiency is expected.
 \end{enumerate}
 
 
@@ -1230,7 +1234,7 @@ Unfortunately, the algorithm is still the most heavily bound by memory accesses.
 
 \vspace{1pc}
 
-In place of branch prediction, VTune shows the algorithm is core bound. VTune indicates that this problems is to a lesser extent caused by uveruse of the divider and to a larger extent by port utilization issues. The divider can be helped by using approximate divisions or factoring them out of loops, but the divisions were truly needed here. I tried to examine individual functions that are core bound due to port utilization, but I couldn't track down the source of the problem. The most promimnent core bound function was \code{ScanExtraHits}, which contains a chain of dependent FP instructions, as indicated as a problem by the documentation\cite{intel_vtune_docs}. With GCC, which uses a fused multiply-add, the function is not core bound at all. Clang aggressively unrolls the loop even though it does two iterations on average, but does not use FMA, making the function core bound. When I forcefully disable loop unrolling, the function becomes even more core bound and the IPC dramatically decreases. It would need a significant amount of time to figure out and tune the function in isolation, which is not worth the effort.
+In place of branch prediction, VTune shows the algorithm is core bound. VTune indicates that this problems is to a lesser extent caused by overuse of the divider and to a larger extent by port utilization issues. The divider can be helped by using approximate divisions or factoring them out of loops, but the divisions were truly needed here. I tried to examine individual functions that are core bound due to port utilization, but I couldn't track down the source of the problem. The most prominent core bound function was \code{ScanExtraHits}, which contains a chain of dependent FP instructions, as indicated as a problem by the documentation\cite{intel_vtune_docs}. With GCC, which uses a fused multiply-add, the function is not core bound at all. Clang aggressively unrolls the loop even though it does two iterations on average, but does not use FMA, making the function core bound. When I forcefully disable loop unrolling, the function becomes even more core bound and the IPC dramatically decreases. It would need a significant amount of time to figure out and tune the function in isolation, which is not worth the effort.
 
 \lstinputlisting[
 	caption=Code of \code{ScanExtraHits}.,
@@ -1264,11 +1268,6 @@ In place of branch prediction, VTune shows the algorithm is core bound. VTune in
 \end{figure}
 
 Figure \ref{fig_velout_without_alloc} shows that without any special memory allocator, the program spends more than 13 percent in memory allocation. (Interestingly, the freeing of memory does not seem to take significant amount of computation.) However, thanks to the stack allocator, this can be reduced to less than 3 percent of the CPU time. The difference shown in the profiler manifests in the runtime as expected: 33.8 seconds with the default allocator compared to 29.1 seconds with the stack allocator, that is a gain of 14\%.
-
-
-\subsubsection{Comparison of Clang and GCC}
-
-i don't know, clang is better on worse code, gcc is better on better code
 
 
 %----------------------------------------------------------------------------
@@ -1309,8 +1308,14 @@ BRIEFLY
 		\url{https://lhc-machine-outreach.web.cern.ch/lhc-machine-outreach/collisions.htm}
 	\bibitem{lhc_facts_and_figures} LHC facts and figures: \\
 		\url{https://public-archive.web.cern.ch/en/LHC/Facts-en.html}
+	\bibitem{kalman_filter_wiki} Explanation of Kalman filters: \\
+		\url{https://en.wikipedia.org/wiki/Kalman_filter}
+	\bibitem{kalman_filter_lhcb} Additional read on track fitting: \\
+		\url{https://twiki.cern.ch/twiki/bin/view/LHCb/LHCbTrackFitting}
 	\bibitem{tracker_tdr} Tracker (UT and FT) Technical Design Report: \\
 		\url{https://cds.cern.ch/record/1647400?ln=en}
+	\bibitem{god_class_wiki} God class anti-pattern: \\
+		\url{https://en.wikipedia.org/wiki/God_object}
 	\bibitem{lemire_simd_prune} Pruning with AVX2: \\
 		\url{https://github.com/lemire/simdprune} 
 	\bibitem{intel_vtune_docs} Documentation of microarchitecture analysis by Intel: \\
