@@ -70,7 +70,7 @@
 % TITLE
 %----------------------------------------------------------------------------
 \begin{center}
-	\Huge Performance optimization of the online data processing software of CERN's LHCb experiment\\
+	\Huge Performance optimization of the online data processing software for a high-energy physics experiment\\
 	\Large Thesis report\\
 	\vspace{1pc}
 	\huge Péter Kardos \\
@@ -81,9 +81,10 @@
 %----------------------------------------------------------------------------
 % === ABSTRACT ===
 %----------------------------------------------------------------------------
-\section{Abstract}
+\section*{Abstract}
 
-The LHCb experiment at the high energy physics research institute CERN\cite{cern_about} conducts research to answer why the universe is made up of matter as opposed to anti-matter. Like any modern experiment, LHCb relies on a complex software infrastructure to collect and analyze the data generated from particle collisions. To filter out unimportant data before writing it to permanent storage, particle collision events have to be processed in real-time which requires enormous computing power. This paper focuses on performance optimization of parts of the software to make it performant in multi-threaded environments with modern, superscalar processors. Vectorization, memory management and cache efficient algorithms are the primary methods to achieve a significant speedup. Improvements by this work combined with further software optimziations and hardware upgrade allows the infrastructure to handle 30 times the former throughput in order to maximize the physics research potential of the experiment.
+The Large Hadron Collider beauty (LHCb) experiment\cite{lchb_desc} investigates the slight differences between matter and antimatter by studying a type of particle called the "beauty quark". Like any modern high energy physics experiment, LHCb relies on a complex hardware and software infrastructure to collect and analyze the data generated from particle collisions. To filter out unimportant data before writing it to permanent storage, particle collision events have to be processed in real-time which requires a lot of computing power. 
+This thesis focuses on performance optimizations of several parts of the real-time data processing software -- one of the particle path reconstruction steps, the particle path refining step, and the data structures used real-time reconstruction algorithms. The thesis investigates and employs techniques such as vectorization, cache-friendly memory structures, microarchitecture analysis and memory allocation optimizations. Resulting code has to use today's many-core, data-parallel, superscalar processors to their full potential in order to meet the performance demands of the experiment.
 
 
 %----------------------------------------------------------------------------
