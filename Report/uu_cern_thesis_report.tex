@@ -290,13 +290,28 @@ Finally, the \textbf{fitter} uses all the hits to align the particles path more 
 
 \subsection{The aim of this thesis project}
 
-As mentioned, the abandoning of the hardware trigger stage highly increases the load on the software trigger. The main goal of this project is to optimize the current software trigger to make it about 3 times as fast. Failure to do so will result in valuable events being dropped, thus reducing the physics potential of the experiment.
+As explained in \ref{sec_lhcb_upgrade}, the abandonment of the hardware trigger stage highly increases the load on the software trigger. To cope with the load in a cost-efficient manner, both a hardware and a software upgrade will take place. Regarding the hardware upgrade, a new computing farm with the latest many-core server processors will be built. This thesis, however, focuses on the software upgrade.
 
-Current computing hardware has changed significantly from the ones the software trigger was originally made for. The even larger gap between memory and CPU speeds demands a more efficient use of CPU caches. Additionally, CPU instruction sets now include SIMD operations, which can, for example, do 4 or more floating point operations in place of one in the same amount of time. Furthermore, modern CPUs have a complex logic for branch prediction and instruction pipelining, which require code to be tailored to serve them.
+\vspace{1pc}
+The majority of the code was written a decade ago, made to perform well in those environments. Since then, hardware changed substantially. The most prominent change is the appearance of many-cores on a single processor die -- up to 40-60 cores as opposed to 2-4 cores back then. It is no longer enough to start a process for each core, because the duplication of shared static memory resources consumes an unacceptable amount of memory. The application was, however, not prepared to efficiently handle multithreading. The gap between CPU speed and memory speeds has grown even more. It is now crucial to use minimalist, cache efficient data structures to avoid being bound by memory. Modern processors also introduced data-parallelism on the instruction level with extensions such as SSE, AVX and AVX-512. Making use of these instruction sets requires special attention to data structures and explicit code on behalf of the programmer. In return, data-parallelism can achieve a performance of up to 16 times that of plain, scalar code*.
 
-To exploit the full capability of current hardware, not only individual pieces of the trigger software need to be changed, but the global data flow also has to be rethought and optimized.
+\vspace{1pc}
+After a determined optimization effort, the team eliminated main bottlenecks from the software, such as excessive locking due to the lack of thread safe design, extremely slow algorithms and pre-computable calculations. Despite that, as of september 2018 (when I began working on this thesis project), a threefold speedup** was still required to achieve the target throughput of 30 million events per second processed. Should the throughput stay below the threshold, unprocessed events will be dropped, reducing the amount of valuable data collected, limiting the physics research potential of the experiment.
 
-During this thesis project, I will be helping the LHCb collaboration to reach its optimization goals for the software trigger.
+\vspace{1pc}
+This thesis project investigates and provides solutions for three main points of optimization:
+\begin{enumerate}
+	\item the parameterized Kalman fitter (\ref{sec_kalman_main}),
+	\item the data model of the particle path reconstruction algorithms (\ref{sec_datamodel_main}),
+	\item and the VELO-UT reconstruction algorithm (\ref{sec_opt_velout}).
+\end{enumerate}
+The means of optimization are introducing minimalistic, cache efficient data structures, vectorizing code, reducing branching and eliminating heavy/inefficient instructions. Additionally, general code design improvements and code modernization also plays a part in increasing both performance and maintainability. The speedups achieved by this work should help the LHCb collaboration to increase event-processing throughput to the required threshold.
+
+\vspace{1pc}
+\small
+\noindent\tab* In case of AVX-512, not accounting for downclocking\\
+\noindent\tab** Threefold for the best-throughput configuration, the acceptable case; sixfold for the best-physics configuration, the ideal case
+\normalsize
 
 
 %----------------------------------------------------------------------------
@@ -523,7 +538,7 @@ In light of the code changes and their effect on the overall performance, we can
 % === DATA MODEL ===
 %----------------------------------------------------------------------------
 \newpage
-\section{Streamlining the computation's data model}
+\section{Streamlining the computation's data model}\label{sec_datamodel_main}
 
 While profiling the Kalman filter, I had to change the data model by adding additional data to the \code{Track} which had adverse effects on performance (see \ref{sec_kalman_main}). As the changes were temporary, the performance issue wasn't a concern, but the general performance of the data model was. Over the years the code accumulated quite some unnecessary data and code which resulted in issues with performance and maintainability. This chapter explains how data structures can be streamlined to better accodomate modern computer architectures.
 
