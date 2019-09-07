@@ -320,9 +320,9 @@ The means of optimization are introducing minimalistic, cache efficient data str
 \newpage
 \section{Choosing optimization targets}
 
-Software is no exception to the 80-20 rule (and its variations), and usually 20\% of the code consumes 80\% of the processor time. It is therefore logical to target optimization efforts on these so-called \textit{hotspots}.
+\subsection{The parameterized Kalman fitter}
 
-Consquently, the first step of optimization is to identify hotspots, for which developers leverage different \textit{profilers}. LHCb's software has a built-in profiler which breaks down execution time to the level of individual algorithms (see \ref{sec_reco_sw_overview}) that make up the particle path reconstruction. In addition to the built-in profiler, tools such as Intel's VTune Amplifier can show a more detailed view of load distribution that breaks down execution time to the level of C/C++ functions.
+The software's built-in profiler measures the execution time of individual algorithms.
 
 \begin{figure}[H]
 	\begin{center}
@@ -332,7 +332,17 @@ Consquently, the first step of optimization is to identify hotspots, for which d
 	\label{fig_algo_usage_choice}
 \end{figure}
 
-Figure \ref{fig_algo_usage_choice} shows that the parametrized Kalman fitter takes 47.1\% of the total execution time, followed by the forward tracking which takes roughly a quarter. Based on this and rough profiling with VTune, I decided that the Kalman fitter is the best target for optimization.
+Figure \ref{fig_algo_usage_choice} shows the relative CPU time the algorithms take on a pie chart. It can be seen that the largest fraction, 47.1\% is consumed by the parameterized fitter. A deeper analysis into the code of the parametrized fitter using Intel VTune showed that a substantial part of the computation time is spent in trivial calculations that are potentially easy to remove. Providing a very high return on investment, the parameterized fitter was an ideal first target for optimization.
+
+
+\subsection{The global data model}
+
+Work on the parameterized fitter uncovered serious issues with the classes and data layout of the particle path reconstruction and refinement algorithms. Additionally, work on the fitter was incomplete as it polluted the already-convoluted data model even more. Fixing the data model to be cache friendly, to support the vectorization of the algorithms and to avoid deep copies throughout the reconstruction pipeline was a natural choice.
+
+
+\subsection{The VELO-UT algorithm}
+
+Having the vectorization friendly data model in place, the rest of the team was already busy vectorizing the particle path reconstruction. The VELO-UT algorithm was still awaiting the overhaul, and as it was the remaining unvectorized top consumer, I took on the task. The work was expected to increase code maintainability by replacing the aging and cluttered code, as well as to provide substantial speed improvements.
 
 
 %----------------------------------------------------------------------------
