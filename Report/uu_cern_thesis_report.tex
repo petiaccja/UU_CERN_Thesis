@@ -88,7 +88,7 @@ This thesis focuses on performance optimizations of several parts of the real-ti
 
 
 %----------------------------------------------------------------------------
-% === TABLE OF CONTENTS ===
+% === TABLE OF CONTENTS, FIGURES, TABLES ===
 %----------------------------------------------------------------------------
 
 \newpage
@@ -98,22 +98,56 @@ This thesis focuses on performance optimizations of several parts of the real-ti
 	\tableofcontents
 }
 
+{
+	\small
+	\hypersetup{linkcolor=black}
+	\listoffigures
+}
+
+{
+	\small
+	\hypersetup{linkcolor=black}
+	\listoftables
+}
+
+%----------------------------------------------------------------------------
+% === GLOSSARY ===
+%----------------------------------------------------------------------------
+
+
+\section*{Abbreviations}
+
+\textcolor{red}{All these are defined in the text, others people should probably just know or google.}
+
+\begin{itemize}
+	\item DRAM: Dynamic Random Access Memory
+	\item CCD: Charge-Coupled Device
+	\item SIMD: Single Instruction Multiple Data
+	\item SOA: Structure Of Array
+	\item AOS: Array Of Structures
+	\item FPGA: Field Programmable Gate Array
+	\item POD: Plain Old Data
+	\item AVX: Advanced Vector eXtensions
+	\item CMOV: Conditionally MOVe
+	\item FMA: Fused Multiply-Add
+	\item IPC: Instruction Per Cycle
+\end{itemize}
+
+
 %----------------------------------------------------------------------------
 % === Introduction ===
 %----------------------------------------------------------------------------
 \newpage
 \section{Introduction}\label{sec_intro}
 
-\subsection{About CERN}\label{sec_about_cern}
-
-CERN (European Organization for Nuclear Research) is an international high energy experimental physics research organization situated near Geneva, on the Franco-Swiss border. CERN's research is based around its infrastructure of several particle accelerators, including the world's largest particle accelerator. Physics research data is obtained from colliding the accelerated particles, and is meant to probe the fundamental laws of the universe. In general, research is organized into \textit{experiments}, each of which examines a particular physics phenomenon. Experiments are using the particle accelerator infrastructure, but have their on devices for the experiment's specific goals.
-\cite{cern_about}
-
-
 \subsection{What are particle accelerators}\label{sec_part_accel_intro}
 
 \subsubsection{Idea and purpose of accelerators}\label{sec_part_accel_idea}
 
+CERN (European Organization for Nuclear Research) is an international high energy experimental physics research organization situated near Geneva, on the Franco-Swiss border. CERN's research is based around its infrastructure of several particle accelerators, including the world's largest particle accelerator. Physics research data is obtained from colliding the accelerated particles, and is meant to probe the fundamental laws of the universe. In general, research is organized into \textit{experiments}, each of which examines a particular physics phenomenon. Experiments are using the particle accelerator infrastructure, but have their on devices for the experiment's specific goals.
+\cite{cern_about}
+
+\vspace{1pc}\noindent
 Particle accelerators accelerate charged particles to high velocities using magnetic and electric fields, then the particles are made to collide with a stationary target or other particles going in the opposite direction. Einstein's famous formula, $E=mc^2$ describes how energy can be converted into matter and vice versa. In a collision, the mass of the colliding particles and their kinetic energy gets converted into new particles in a quantum process. The new particles also have some kinetic energy, thus fly away from the collision point. Thanks to the high energy of the collision, heavy particles that are otherwise extremely rare also get created and scientists can examine their properties in a controlled environment.
 
 \subsubsection{Theory of operation}\label{sec_part_accel_theory}
@@ -328,7 +362,7 @@ The software's built-in profiler measures the execution time of individual algor
 	\begin{center}
 		\includegraphics[width=0.6\textwidth]{algo_usage_original_bestphys}
 	\end{center}
-	\caption{Workload distribution among HLT1 algorithms, mid 2018}
+	\caption{Workload distribution among trigger software algorithms, mid 2018}
 	\label{fig_algo_usage_choice}
 \end{figure}
 
@@ -390,7 +424,7 @@ Careful examination reveals the way hits are loaded through the so-called \texti
 
 When a particle hits a detector, the identifier of the element of the detector that was hit is recorded. (Detector elements are analogous to the pixels of a digital CCD camera.) These elements are basically unambiguously identified by the so-called \textit{LHCbIDs} (represented by an integer), so it is enough to store the IDs inside the Track object and all information (such as location of the hit, measurement error) can be recovered. 
 
-Over the years however, this system grow unnecessarily complex resulting in a dramatic slowdown. Clusters, containing some basic information about the hit, such as its location, are stored inside measurement providers as a large array. In order to find the cluster that corresponds to the ID, this whole array is searched linearly. Once the cluster is found, a \textit{Measurement} object is allocated on the heap and initialized from it. Finally, another object, called a \textit{trajectory}, is queried from the measurement, from which the data actually required can be extracted. The storage of clusters and creation of measurements is handled by \textit{MeasurementProviders}. Additionally, we can distinguish separate measurement objects for the Velo, UT and FT hits.
+Over the years however, this system grow unnecessarily complex resulting in a dramatic slowdown. Clusters, containing some basic information about the hit, such as its location, are stored inside measurement providers as a large array. In order to find the cluster that corresponds to the ID, this whole array is searched linearly. Once the cluster is found, a \textit{Measurement} object is allocated on the heap and initialized from it. Finally, another object, called a \textit{trajectory}, is queried from the measurement, from which the data actually required can be extracted. The storage of clusters and creation of measurements is handled by \textit{MeasurementProviders}. Additionally, we can distinguish separate measurement objects for the VELO, UT and FT hits.
 
 As seen, this is a convoluted process, involving an asymptotically unacceptable linear search and a lot of dynamic memory allocation. Dynamic allocation is not only slow, it highly suffers from thread contention at the operating system level in our multi-threaded software. Additionally, the individually allocated objects are scattered around in memory, resulting in poor CPU cache performance.
 
@@ -468,7 +502,7 @@ To trade physics quality for performance, event culling decisions can be made ea
 	\label{fig_algo_usage_original_bestthru}
 \end{figure}
 
-Figure \ref{fig_algo_usage_original_bestthru} shows the best throughput case where the pixel tracking algorithm takes the most amount of time. This algorithm is responsible for finding particle track stubs from only Velo hits, and was negatively affected by my fitter optimizations.
+Figure \ref{fig_algo_usage_original_bestthru} shows the best throughput case where the pixel tracking algorithm takes the most amount of time. This algorithm is responsible for finding particle track stubs from only VELO hits, and was negatively affected by my fitter optimizations.
 
 \begin{figure}[H]
 	\begin{center}
@@ -513,7 +547,7 @@ Due to the complex interactions inside modern, pipelined CPUs and between the CP
 
 \subsection{Results, conclusion}
 
-I managed to significantly increase the throughput of the \textit{best physics} case from 4450 events per second to 5870 events per second, or a 32\% increase. Unfortunately, the \textit{best throughput} case slowed down from 14500 events/sec to about 13700, or 5\% decrease in throughput.
+I managed to significantly increase the throughput of the \textit{best physics} case from 4450 events per second to 5870 events per second, or a 32\% increase. Unfortunately, the \textit{best throughput} case slowed down from 14500 events/sec to about 13700, or 5\% decrease in throughput. The speedup can be explained by removing unnecessary work by simplifying the code. The slowdown of the \textit{best throughput case} can be attributed to overall making \code{Track} object slightly heavier and its creation more expensive, and the reduced weight of the code that got faster can't make up for it anymore.
 
 \begin{figure}[H]
 	\begin{center}
@@ -529,12 +563,12 @@ Another interesting figure to look at is how the weight of the parameterized Kal
 	\centering
 	\begin{subfigure}{.5\textwidth}
 		\centering
-		\includegraphics[width=.9\linewidth]{algo_usage_original_bestphys}
+		\includegraphics[width=\linewidth]{algo_usage_original_bestphys}
 		\caption{Before optimizations}
 	\end{subfigure}%
 	\begin{subfigure}{.5\textwidth}
 		\centering
-		\includegraphics[width=.9\linewidth]{algo_usage_optkalman_bestphys}
+		\includegraphics[width=\linewidth]{algo_usage_optkalman_bestphys}
 		\caption{After optimizations}
 	\end{subfigure}
 	\caption{The distribution of processor time requirements of each algorithms. The parameterized Kalman fitter is identified by the label \textit{ForwardFitterAlgParamFast}.}
@@ -732,6 +766,7 @@ struct FtTrack {
 
 The algorithms and their input and output are best illustrated with a graph. The decoders return a plain vector of hits. The tracking algorithms operate on the track stubs and the hits, and write out the extended tracks and the estimated states of the particle. Note that since the \code{Track} and are split, the VELO-UT tracker is able to consume only the particular states that it needs.
 
+\textcolor{red}{TODO: too small, remake vertical?}
 \begin{figure}[H]
 	\begin{center}
 		\includegraphics[width=1\textwidth]{datamodel_track_flow}
@@ -768,7 +803,7 @@ Thanks to the plain old data (POD) structures, vectorization is easier, however 
 The removal of the unused members of the track object resulted in a very significant, 17\% gain in the best physics configuration. The realization of the split \code{Track} object between the VELO and the VELO-UT tracker alone resulted in a 4.8\% gain in overall performance. Unfortunately, I wasn't able to measure performance in different configurations and with the entire network of algorithms refactored because of project management policies.
 
 
-\subsection{Future work}
+\subsection{Possible improvements}
 
 The primary goal of restructuring the data model was not actually to create a highly performant one, but to create a stepping stone for more efficient data models, therefore multiple improvements can be realized.
 
@@ -839,14 +874,28 @@ Note that with the original data model, not even the AOS version of vectorizatio
 Vectorization, in the ideal case, can speed up code execution by 8 times. Though this is rarely achieved in practice, it is still one of the most effective ways to optimize the individual algorithms, so the data model must be able to support it.
 
 
+\subsection{Related Work}
+
+\textcolor{red}{TODO: by Sebastien: "explain that the problem was then taken over by other people that implemented your ideas, including SOA and vectorization. Give numbers on the huge gains achieved"}
+
+
 %----------------------------------------------------------------------------
 % === VELOUT OPT ===
 %----------------------------------------------------------------------------
 \newpage
-\section{Vectorizing and optimizing the Velo-UT algorithm}\label{sec_opt_velout}
+\section{Vectorizing the VELO-UT algorithm}\label{sec_opt_velout}
 
-As highlighted in \ref{sec_reco_sw_overview}, the Velo-UT algorithm extends the straight line tracks created in the VELO tracking algorithm by assigning UT silicon strip hits to it. More importantly, the Velo-UT algorithm provides a coarse estimate for the momentum of the particle, allowing efficient tracking in the FT.
-The algorithm takes roughly 14 percent of the pipeline, so optimizing it is not expected to provide a high overall gain in performance, however its code is outdated and is in much need of an overhaul. My goal for the Velo-UT was to streamline the code to adhere to modern coding practices, and in the meantime, to make the algorithm play well with modern CPU architectures. In light of this, I was aiming at a highly SIMD-vectorized code, which operates with SOA data structures
+As highlighted in \ref{sec_reco_sw_overview}, the VELO-UT algorithm extends the straight line tracks created in the VELO tracking algorithm by assigning UT silicon strip hits to it. More importantly, the VELO-UT algorithm provides a coarse estimate for the momentum of the particle, allowing efficient tracking in the FT.
+The algorithm takes roughly 10 percent of the pipeline, so while it is currently not a top consumer, it will still provide significant gains. In the future the top consumer, the VELO tracking, will receive serious speedups, making to VELO-UT the second top consumer, stressing the importance of its upgrade. My goal for the VELO-UT was to streamline the code to adhere to modern coding practices, and in the meantime, to produce highly SIMD-vectorized code that uses SOA data structures.
+
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=\textwidth]{velout_flamegraph}
+	\end{center}
+	\caption{The flamegraph shows the CPU time share of the algorithms. Share is proportional to the width of the bar that represents the particular algorithm. The entire width of the graph corresponds to 100\%, while the VELO-UT (highlighted with the black rectangle) reads 9.96\%.}
+	\label{fig_velout_flamegraph}
+\end{figure}
 
 
 \subsection{Geometry of the UT detector}
@@ -864,12 +913,12 @@ Figure \ref{fig_ut_geometry} shows the rectangular panels of the UT as looking d
 
 \subsection{Decoding of the raw data from the detector}
 
-Each silicon strip has a unique numeric identifier. During a collision event, the electronics of the UT detector compile a list of identifiers of the strips that were hit by a particle, which the software receives in a heaavily compressed format. With a description of the exact geometry of the detector, that is, the location and dimension of sensors and strips in the global 3D space, the software is able to represent the strips that were hit by a line segment in the 3D space instead of just an ID. The \code{UTHits} resulting from the  decoding process are gathered into a \code{HitHandler} structure, which groups the hits by which sensor they belong to. The Velo-UT algorithm consumes the \code{HitHandler} alongside the VELO tracks to produce \textit{upstream} tracks.
+Each silicon strip has a unique numeric identifier. During a collision event, the electronics of the UT detector compile a list of identifiers of the strips that were hit by a particle, which the software receives in a heaavily compressed format. With a description of the exact geometry of the detector, that is, the location and dimension of sensors and strips in the global 3D space, the software is able to represent the strips that were hit by a line segment in the 3D space instead of just an ID. The \code{UTHits} resulting from the  decoding process are gathered into a \code{HitHandler} structure, which groups the hits by which sensor they belong to. The VELO-UT algorithm consumes the \code{HitHandler} alongside the VELO tracks to produce \textit{upstream} tracks.
 
 
-\subsection{The original Velo-UT algorithm}\label{sec_velout_desc}
+\subsection{The original VELO-UT algorithm}\label{sec_velout_desc}
 
-The main idea of the Velo-UT algorithm is to consume the VELO tracks and the UT hits, and extend the VELO tracks with hits from the UT to create so called \textit{upstream} tracks. The algorithm handles each VELO track separately. The process for a single VELO tracks can be broken down into the following steps:
+The main idea of the VELO-UT algorithm is to consume the VELO tracks and the UT hits, and extend the VELO tracks with hits from the UT to create so called \textit{upstream} tracks. The algorithm handles each VELO track separately. The process for a single VELO tracks can be broken down into the following steps:
 
 \begin{enumerate}
 	\item Skip track if it's unstuitable
@@ -911,7 +960,7 @@ Each candidate that belongs to a track goes through a fitting stage. This is muc
 The error of the fitting of a candidate can be calculated by determining how far the parameterized path of the particle lies from the position of the UT hits it was fitted from. If any of the candidates have a sufficiently low error, the one with the lowest is picked to form the newly created upstream track.
 
 
-\subsection{Analysis of the original Velo-UT algorithm}
+\subsection{Analysis of the original VELO-UT algorithm}
 
 \subsubsection{Hotspots}
 
@@ -923,14 +972,14 @@ The error of the fitting of a candidate can be calculated by determining how far
 	\label{fig_velout_hotspots_orig}
 \end{figure}
 
-As we can see, the Velo-UT algorithm spends most of its time gathering the UT hits that could potentially belong to a VELO tracks. The second largest portion is \textit{formClusters} which performs the search for aligned UT hits and also does a preliminary fit to determine the best candidate. The third largest unit is the creation of the output (the \textit{upstream} tracks) which performs a higher quality final fit and does some analysis to remove potentially undesirable tracks.
+As we can see, the VELO-UT algorithm spends most of its time gathering the UT hits that could potentially belong to a VELO tracks. The second largest portion is \textit{formClusters} which performs the search for aligned UT hits and also does a preliminary fit to determine the best candidate. The third largest unit is the creation of the output (the \textit{upstream} tracks) which performs a higher quality final fit and does some analysis to remove potentially undesirable tracks.
 
 In light of this, the primary target for improvement is the largest chunk: gathering the hits, however, the other hotspots are also of significant interest.
 
 
 \subsubsection{Gathering hits}
 
-Examining the code of the hit gathering function(\ref{lst_velout_gatherhits_original}), we can see that the main idea is to loop over the four planes, extrapolate the track to the plane, and collect the hits for each plane.
+Examining the code of the hit gathering function (code listing \ref{lst_velout_gatherhits_original}), we can see that the main idea is to loop over the four planes, extrapolate the track to the plane, and collect the hits for each plane.
 
 The first step in locating the close-by UT hits happens by finding the sectors (that is, the 10-by-10 centimeter sensors) that are adjacent to the point where the extrapolated track hits the current panel. The \code{findSectors} function performs this step via a rather complex logic (which is not shown here).
 
@@ -1003,19 +1052,25 @@ The code violates several coding best practices, which is not strictly an optimi
 
 \subsubsection{Uniform grid space partitioning}\label{sec_velout_space_partitioning}
 
-For the logic part, I left the algorithm as it was as I could not find better alternatives \textcolor{red}{(maybe explain parabola and hough methods I tried)}, however I redesigned space partitioning from scratch.
+For the logic part, I left the algorithm as it was as I could not find better alternatives (see \ref{sec_velout_alternative}), however I redesigned space partitioning from scratch.
 \vspace{1pc}
 
 Space partitioning, most prominent in 3D graphics and physics simulations, is a technique to accelerate computations that are done on a large number of objects contained in a 3D space. Frequently, there are only significant intereactions between nearby objects, so computations for the interactions of far away objects can be neglected. To be able to quickly list objects nearby to a 3D coordinate, I used the simplest space partitioning scheme: uniform grid. This method slices the 2D or 3D space by a uniform grid, and keeps a list of objects for each grid cell that fall into the cell. This way, to find objects near to a specific point, one only has to calculate the grid cell the point falls in (a few divisions) and read the list of that cell. (In some cases, the nearest four cells can be used not to miss any objects in case the specified point lies close to a grid line.) The logic of the grid-based lookup is vastly simpler than the sector-based lookup.
 \vspace{1pc}
 
-Since there are 14  rows of sensors on every plane of the UT detector, I used a grid with 14 rows, carefully aligned to the geometrical position of the sensor rows. This ensures that a fiber falls entirely within its grid cell. For the half-height sensors in the middle, two sensors fall into the same grid cell. There are no such limits for the horizontal resolution of the grid cells, so the cell width can be set arbitrarily. As the search region in the order of a few centimeters, I chose to have 64 cells on the horizontal axis, resulting in a cell width of roughly 3 cm. The third axis - in the direction of the beamline - is divided so that each four panel of the UT falls into its own grid cell. To sum up, the grid is 64 x 14 x 4 cells.
-\vspace{1pc}
-
-\textcolor{red}{add a figure for space partitioning}
+Since there are 14  rows of sensors on every plane of the UT detector, I used a grid with 14 rows, carefully aligned to the geometrical position of the sensor rows. This ensures that a fiber falls entirely within its grid cell. For the half-height sensors in the middle, two sensors fall into the same grid cell. There are no such limits for the horizontal resolution of the grid cells, so the cell width can be set arbitrarily. As the search region in the order of a few centimeters, I chose to have 64 cells on the horizontal axis, resulting in a cell width of roughly 3 cm. The third axis - in the direction of the beamline - is divided so that each four panel of the UT falls into its own grid cell. To sum up, the grid is 64 x 14 x 4 cells (see figure \ref{fig_velout_space_partitioning}).
 
 The binning (assignment of cell) of hits is done by taking the middle point of the fiber, and using a division on all three axes to determine the integer coordinates of the corresponding cell.
-Similarly, lookup of hits nearby to a point involves first a similar division to acquire the corresponding cell, then the hits assigned to that cell can be iterated over. One caveat, however, is that the middle two layers are tilted, so some tilted fibers cross multiple cells. In this case, we would like to have them show up when we query either of the cells. Instead of duplicating hits, I chose to simply sample the nearest two cells instead of just one. With the cell size of 3 centimeters, it is unlikely to miss a hit in such way. The same issues persists in the vertical direction as well when the sampled point falls very close to a grid line. This is exacarbated by the small displacement on the Z axis that the sensors have by design of the hardware, and manufacturing errors also add to the problem. However, by design, there is a small overlap between two adjacent sensors, both on the vertical and horizontal axes. This means that a track hitting a grid line is likely to excite two fibers at the same time. The idea is that even when avoiding double-sampling on the vertical axis, at least one of those fibers will still be registered in the subject cells.
+
+Similarly, lookup of hits nearby to a point involves first a similar division to acquire the corresponding cell, then the hits assigned to that cell can be iterated over. One caveat, however, is that the middle two layers are tilted, so some tilted fibers cross multiple cells. In this case, we would like to have them show up when we query either of the cells. Instead of duplicating hits, I chose to simply sample the nearest two cells instead of just one (see figure \ref{fig_velout_space_partitioning}). With the cell size of 3 centimeters, it is unlikely to miss a hit in such way. The same issues persists in the vertical direction as well when the sampled point falls very close to a grid line. This is exacarbated by the small displacement on the Z axis that the sensors have by design of the hardware, and manufacturing errors also add to the problem. However, by design, there is a small overlap between two adjacent sensors, both on the vertical and horizontal axes. This means that a track hitting a grid line is likely to excite two fibers at the same time. The idea is that even when avoiding double-sampling on the vertical axis, at least one of those fibers will still be registered in the subject cells.
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=0.85\textwidth]{velout_space_partitioning}
+	\end{center}
+	\caption{Illustration of the bins of the space partitioning scheme. (Note that X only shows 8 cells as opposed to the actual 64 in order to make the image clearer.) As an example, the blue X marks the point where a particle's track crosed the detector, and the two adjacent grid cells highlighted in blue are searched for nearby fiber hits.}
+	\label{fig_velout_space_partitioning}
+\end{figure}
 
 
 \subsubsection{Data structures and steps}
@@ -1024,7 +1079,7 @@ Similarly, lookup of hits nearby to a point involves first a similar division to
 	\begin{center}
 		\includegraphics[width=0.85\textwidth]{velout_opt_datastruct_flow_p1}
 	\end{center}
-	\caption{Data structures and process diagram of the new Velo-UT algorithm. (Part 1)}
+	\caption{Data structures and process diagram of the new VELO-UT algorithm. (Part 1)}
 	\label{fig_velout_opt_datastruct_flow_p1}
 \end{figure}
 
@@ -1032,7 +1087,7 @@ Similarly, lookup of hits nearby to a point involves first a similar division to
 	\begin{center}
 		\includegraphics[width=0.7\textwidth]{velout_opt_datastruct_flow_p2}
 	\end{center}
-	\caption{Data structures and process diagram of the new Velo-UT algorithm. (Part 2)}
+	\caption{Data structures and process diagram of the new VELO-UT algorithm. (Part 2)}
 	\label{fig_velout_opt_datastruct_flow_p2}
 \end{figure}
 
@@ -1081,7 +1136,7 @@ The step illustrated on figures Figures \ref{fig_velout_opt_datastruct_flow_p1} 
 
 \subsubsection{Vectorization of filtering}\label{sec_velout_filtering_vect}
 
-The filtering algorithm takes a set of States that describe the VELO tracks, and decides which ones are possible to be be extended into a VELO-UT track. Thanks to the restructuring of the overall data structures by my colleagues, the Velo-UT algorithm now only receives so called \textit{forward tracks}\textcolor{red}{ref to track types} that point towards the UT. Consequently, the filtering must only remove tracks that fall out of the acceptance of the UT, that is, miss all the panels of the UT and cannot produce any UT hits.
+The filtering algorithm takes a set of States that describe the VELO tracks, and decides which ones are possible to be be extended into a VELO-UT track. Thanks to the restructuring of the overall data structures by my colleagues, the VELO-UT algorithm now only receives so called \textit{forward tracks}\textcolor{red}{ref to track types} that point towards the UT. Consequently, the filtering must only remove tracks that fall out of the acceptance of the UT, that is, miss all the panels of the UT and cannot produce any UT hits.
 
 Rephrasing the specification in computing terms, for the vector of a states, a vector of booleans has to be produced where each boolean indicates weather to keep the corresponding state, and then the vector of states needs to be collapsed to a new vector that only contains accepted states. Using SIMD, on can easily take 8 elements (on AVX ISA) from the rows of the states, thus do calculations on 8 states at once to produce 8 booleans. It is possible to efficiently leverage Intel's AVX2 instruction set to do the pruning of the 8 items at a good performance\cite{lemire_simd_prune}. First, the items of the 8-vector are permuted in order to bring the selected elements to the front of the vector and move the unused items at the back. Second, an unaligned memory store operation writes the entire 8 vector to the output data structure at a specific offset. For the next write, the offset is increased by the popcount (number of the selected items), which means the next write will simply overwrite the unselected items of the current operation. (See figure \ref{fig_velout_opt_simd_filter}.)
 
@@ -1150,7 +1205,7 @@ One average, there are only 2 hits per track per panel, so vectorizing over one 
 
 \subsubsection{Custom memory allocation} \label{sec_velout_stack_alloc}
 
-With the optimized version of the Velo-UT algorithm, up to 20\% of the computation time was spent with memory allocation. The cost of memory allocation in an application depends most on the number of allocations, not the size of the allocations. Large allocations are much cheaper per byte allocated, so it is worth allocating an array for all objects upfront instead of allocating each object individually. The optimized Velo-UT algorithm uses this technique, however, the SOA data layouts require the allocation of a separate array for each data member of the structure. This combined with the fact that the algorithm generally works on a small amount of data makes memory allocations a significant problem.
+With the optimized version of the VELO-UT algorithm, up to 20\% of the computation time was spent with memory allocation. The cost of memory allocation in an application depends most on the number of allocations, not the size of the allocations. Large allocations are much cheaper per byte allocated, so it is worth allocating an array for all objects upfront instead of allocating each object individually. The optimized VELO-UT algorithm uses this technique, however, the SOA data layouts require the allocation of a separate array for each data member of the structure. This combined with the fact that the algorithm generally works on a small amount of data makes memory allocations a significant problem.
 
 \vspace{1pc}
 
@@ -1193,7 +1248,7 @@ Subsequent allocations are performed similarly.
 	\label{fig_velout_stack_allocator_alloc2}
 \end{figure}
 
-Stack allocators are wasteful, because previously requested blocks are never individually deallocated and their memory reused, rather, all the memory is deallocated at once when the memory pool is destroyed. This, however, is not a problem, since the entire Velo-UT algorithm requires about half a megabyte from a stack allocator, which amounts to 20-30 megabytes of memory when running on 40-60 threads simultaneously. That is still negligible compared to more than 32 gigabytes of RAM which these machines are equipped with.
+Stack allocators are wasteful, because previously requested blocks are never individually deallocated and their memory reused, rather, all the memory is deallocated at once when the memory pool is destroyed. This, however, is not a problem, since the entire VELO-UT algorithm requires about half a megabyte from a stack allocator, which amounts to 20-30 megabytes of memory when running on 40-60 threads simultaneously. That is still negligible compared to more than 32 gigabytes of RAM which these machines are equipped with.
 
 In case the allocator would run out of space, a new empty block is requested from the operating system. Even though this case is handled, the goal is to minimize the number of requests to the OS, so the initial block size is tuned so as to fit all data of the algorithm.
 
@@ -1204,7 +1259,7 @@ Stack allocators are extremely fast, as all it takes to allocate a new memory bl
 
 \subsubsection{Overall performance}
 
-I acquired the results by running the code on a Haswell computer, looping over the same event for 100k iterations. The event of choice is a relatively busy event with many tracks. For the tests, the Velo-UT code was running alone, isolated from the rest of the reconstruction.
+I acquired the results by running the code on a Haswell computer, looping over the same event for 100k iterations. The event of choice is a relatively busy event with many tracks. For the tests, the VELO-UT code was running alone, isolated from the rest of the reconstruction.
 
 \begin{table}[H]
 	\centering
@@ -1224,6 +1279,11 @@ I acquired the results by running the code on a Haswell computer, looping over t
 As the space partitioning is a new workload that wasn't present in the original algorithm, timings are shown with it included. The space partitioning can be, however, loosely considered as a replacement to the construction of the \code{HitHandler}, so timings with it excluded are also worth mentioning.
 
 Overall, the optimized algorithm is 2.57x faster with GCC and 2.18x faster with Clang. When the space partitioning is excluded, the numbers are 3.46x and 2.80x, respectively. These numbers fall short to what one would expect by using 8-way SIMD instruction, however they better represent reality. As previously mentioned, a significant portion of the code remained scalar as it was difficult or practically impossible to vectorize and some of the vectorized code suffers from inefficiencies due to small amount of data in the vectorized loops. Additionally, the original non-vectorized code gets auto-vectorized by the compilers, which further shifts the balance. Overall, the speedup if still significant and worthwhile.
+
+
+\textcolor{red}{TODO: by Sebastien: "make a ref on Amdahl's law and the fact that with 75\% of the code vectorizable, the optimal vectorized code gets only a x3 speedup. So you're actually quite good here. Take graph from wikipedia.}
+
+\textcolor{red}{my note: vectorization is not the only factor as I changed the algorithm as well with the space partitioning, which makes reasoning about Amdahl's law impossible in isolation. Somehow talk about both? Use roofline analysis?}
 
 
 \subsubsection{Microarchitecture usage, bottlenecks}
@@ -1257,6 +1317,8 @@ The most notable difference is the complete absence of bad speculation problems.
 \vspace{1pc}
 
 Unfortunately, the algorithm is still the most heavily bound by memory accesses. VTune highlights L1 memory accesses similarly to the unoptimized version, but it does not indicate any specific issue in connection with L1. I examined the code of the gathering of the hits for data dependencies that could cause high L1 latencies, but it does not seem to show any. On the other hand, the code needs to read a lot of data, and does minimal calculation on it in comparison. Though this case is not mentioned in the documentation by Intel, a toy example of adding two small arrays that fit in L1 using vectorized instructions results in a heavily memory bound program according to VTune. Based on that, it simply seems like L1 is unable to serve the execution units of the CPU with enough data when the operations they do are too simple and fast. Since the algorithm already uses SOA data layouts and vector register loads to read only the most necessary data in the largest possible chunks, this is most likely a characteristic of the algorithm.
+
+\textcolor{red}{TODO: use roofline to check if code is ideal. See Omar Awile's talk in lhcb software tutorials.}
 
 \vspace{1pc}
 
@@ -1296,19 +1358,30 @@ In place of branch prediction, VTune shows the algorithm is core bound. VTune in
 Figure \ref{fig_velout_without_alloc} shows that without any special memory allocator, the program spends more than 13 percent in memory allocation. (Interestingly, the freeing of memory does not seem to take significant amount of computation.) However, thanks to the stack allocator, this can be reduced to less than 3 percent of the CPU time. The difference shown in the profiler manifests in the runtime as expected: 33.8 seconds with the default allocator compared to 29.1 seconds with the stack allocator, that is a gain of 14\%.
 
 
+\subsection{Alternative VELO-UT algorithms}\label{sec_velout_alternative}
+
+\textcolor{red}{TODO:}
+
+\subsubsection{Parabola extrapolation of VELO tracks}
+
+\subsubsection{Hough-transform/gradient descent hybrid line finding}
+
+
 %----------------------------------------------------------------------------
 % === Conclusion ===
 %----------------------------------------------------------------------------
 \newpage
 \section{Conclusion}
 
-\color{red}
-- summarize my own contributions \\
-- summarize achieved results \\
-- make conclusions about them \\
-- how it affects the future \\
-BRIEFLY
-\color{black}
+{
+	\color{red}
+	TODO:
+	- summarize my own contributions \\
+	- summarize achieved results \\
+	- make conclusions about them \\
+	- how it affects the future \\
+	BRIEFLY
+}
 
 
 %----------------------------------------------------------------------------
@@ -1352,24 +1425,25 @@ BRIEFLY
 
 
 %----------------------------------------------------------------------------
-% SCRATCH
+% APPENDICES
 %----------------------------------------------------------------------------
-\newpage
-\section{Scratch}
 
+\appendix
+
+\newpage
+\section{Code listings}
+
+\subsection{Original VELO-UT's hit gathering}
 \lstinputlisting[
-	caption=Hit gathering for the original Velo-UT,
+	caption=Hit gathering for the original VELO-UT,
 	label=lst_velout_gatherhits_original,
 	language=C++,
 	firstline=277,
 	lastline=332,
 	firstnumber=277]
 	{source_code/PrVeloUT.cpp}
-
-
-\appendix
-
 \newpage
+
 \section{Intel VTune Amplifier XE}
 
 \section{CPU pipelining}
