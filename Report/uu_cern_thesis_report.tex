@@ -84,7 +84,8 @@
 \section*{Abstract}
 
 The LHCb experiment probes into the differences between matter and anti-matter by examining particle collisions. Like any modern high energy physics experiment, LHCb relies on a complex hardware and software infrastructure to collect and analyze the data generated from particle collisions. To filter out unimportant data before writing it to permanent storage, particle collision events have to be processed in real-time which requires a lot of computing power.
-This thesis focuses on performance optimizations of several parts of the real-time data processing software: i) one of the particle path reconstruction steps; ii) the particle path refining step; iii) the data structures used by the real-time reconstruction algorithms. The thesis investigates and employs techniques such as vectorization, cache-friendly memory structures, microarchitecture analysis, and memory allocation optimizations. The resulting performance-optimized code uses today's many-core, data-parallel, superscalar processors to their full potential in order to meet the performance demands of the experiment. The thesis results show that the reconstruction step got 3 times faster, the refinement step got 2 times faster and the changes to the data model allowed vectorization of most reconstruction algorithms.
+This thesis focuses on performance optimizations of several parts of the real-time data processing software: i) one of the particle path reconstruction steps; ii) the particle path refining step; iii) the data structures used by the real-time reconstruction algorithms. The thesis investigates and employs techniques such as vectorization, cache-friendly memory structures, microarchitecture analysis, and memory allocation optimizations.
+The resulting performance-optimized code uses today's many-core, data-parallel, superscalar processors to their full potential in order to meet the performance demands of the experiment. The thesis results show that the reconstruction step got 3 times faster, the refinement step got 2 times faster and the changes to the data model allowed vectorization of most reconstruction algorithms.
 
 
 %----------------------------------------------------------------------------
@@ -140,9 +141,9 @@ This thesis focuses on performance optimizations of several parts of the real-ti
 \newpage
 \section{Introduction}\label{sec_intro}
 
-\subsection{What are particle accelerators}\label{sec_part_accel_intro}
+\subsection{Particle accelerators}\label{sec_part_accel_intro}
 
-\subsubsection{Idea and purpose of accelerators}\label{sec_part_accel_idea}
+\subsubsection{Idea and purpose}\label{sec_part_accel_idea}
 
 CERN (European Organization for Nuclear Research) is an international high energy experimental physics research organization situated near Geneva, on the Franco-Swiss border. CERN's research is based around its infrastructure of several particle accelerators, including the world's largest particle accelerator. Physics research data is obtained from colliding the accelerated particles, and is meant to probe the fundamental laws of the universe. In general, research is organized into \textit{experiments}, each of which examines a particular physics phenomenon. Experiments are using the particle accelerator infrastructure, but have their on devices for the experiment's specific goals.
 \cite{cern_about}
@@ -322,7 +323,9 @@ Once pixel hit positions are known by their global X,Y,Z coordinates, the \textb
 Finally, the \textbf{fitter} uses all the hits to align the particles path more closely with the position of the hits. In principle, it works similarly to a curve fitting solution, but uses a Kalman filter\cite{kalman_filter_wiki}\cite{kalman_filter_lhcb} internally. Having the most accurate path for each particle, the decision is made to keep or drop the event. (Note that \textit{fitter} and \textit{filter} are used interchangably, as the algorithm falls into both categories.)
 
 
-\subsection{The aim of this thesis project}
+\subsection{Goals for the upgrade}
+
+\subsubsection{Previous work}
 
 As explained in \ref{sec_lhcb_upgrade}, the abandonment of the hardware trigger stage highly increases the load on the software trigger. To cope with the load in a cost-efficient manner, both a hardware and a software upgrade will take place. Regarding the hardware upgrade, a new computing farm with the latest many-core server processors will be built. This thesis, however, focuses on the software upgrade.
 
@@ -331,6 +334,8 @@ The majority of the code was written a decade ago, made to perform well in those
 
 \vspace{1pc}
 After a determined optimization effort, the team eliminated main bottlenecks from the software, such as excessive locking due to the lack of thread safe design, extremely slow algorithms and pre-computable calculations. Despite that, as of september 2018 (when I began working on this thesis project), a threefold speedup** was still required to achieve the target throughput of 30 million events per second processed. Should the throughput stay below the threshold, unprocessed events will be dropped, reducing the amount of valuable data collected, limiting the physics research potential of the experiment.
+
+\subsubsection{Contributions of this thesis project}
 
 \vspace{1pc}
 This thesis project provides solutions to the optimization of three major parts of the code:
