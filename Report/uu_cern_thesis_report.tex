@@ -547,7 +547,7 @@ Due to the complex interactions inside modern, pipelined CPUs and between the CP
 
 \subsection{Results, conclusion}
 
-I managed to significantly increase the throughput of the \textit{best physics} case from 4450 events per second to 5870 events per second, or a 32\% increase. Unfortunately, the \textit{best throughput} case slowed down from 14500 events/sec to about 13700, or 5\% decrease in throughput. The speedup can be explained by removing unnecessary work by simplifying the code. The slowdown of the \textit{best throughput case} can be attributed to overall making \code{Track} object slightly heavier and its creation more expensive, and the reduced weight of the code that got faster can't make up for it anymore.
+I managed to significantly increase the throughput of the \textit{best physics} case from 4450 events per second to 5870 events per second, or a 32\% increase. Unfortunately, the \textit{best throughput} case slowed down from 14500 events/sec to about 13700, or 5\% decrease in throughput. The speedup can be explained by removing unnecessary work by simplifying the code. The slowdown of the \textit{best throughput case} can be attributed to overall making the \code{Track} object slightly heavier and its creation more expensive, and the reduced weight of the code that got faster can't make up for it anymore. This is still acceptable, however, as the modifications to the \code{Track} are only temporary and should disappear with future cleanup and refactoring of the data model.
 
 \begin{figure}[H]
 	\begin{center}
@@ -1455,6 +1455,10 @@ Figure \ref{fig_velout_without_alloc} shows that without any special memory allo
 \section{Vectorization}
 
 \section{LHCb track types}
+
+\section{LHCb software configurations}
+
+best physics and best throughput cases etc explained
 
 
 \end{document}
