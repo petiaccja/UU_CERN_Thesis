@@ -333,11 +333,11 @@ The majority of the code was written a decade ago, made to perform well in those
 After a determined optimization effort, the team eliminated main bottlenecks from the software, such as excessive locking due to the lack of thread safe design, extremely slow algorithms and pre-computable calculations. Despite that, as of september 2018 (when I began working on this thesis project), a threefold speedup** was still required to achieve the target throughput of 30 million events per second processed. Should the throughput stay below the threshold, unprocessed events will be dropped, reducing the amount of valuable data collected, limiting the physics research potential of the experiment.
 
 \vspace{1pc}
-This thesis project investigates and provides solutions for three main points of optimization:
+This thesis project provides solutions to the optimization of three major parts of the code:
 \begin{enumerate}
 	\item the parameterized Kalman fitter (\ref{sec_kalman_main}),
-	\item the data model of the particle path reconstruction algorithms (\ref{sec_datamodel_main}),
-	\item and the VELO-UT reconstruction algorithm (\ref{sec_opt_velout}).
+	\item the data model of the particle path reconstruction algorithms (\ref{sec_datamodel_main}), and
+	\item the VELO-UT reconstruction algorithm (\ref{sec_opt_velout}).
 \end{enumerate}
 The means of optimization are introducing minimalistic, cache efficient data structures, vectorizing code, reducing branching and eliminating heavy/inefficient instructions. Additionally, general code design improvements and code modernization also plays a part in increasing both performance and maintainability. The speedups achieved by this work should help the LHCb collaboration to increase event-processing throughput to the required threshold.
 
@@ -366,7 +366,7 @@ The software's built-in profiler measures the execution time of individual algor
 	\label{fig_algo_usage_choice}
 \end{figure}
 
-Figure \ref{fig_algo_usage_choice} shows the relative CPU time the algorithms take on a pie chart. It can be seen that the largest fraction, 47.1\% is consumed by the parameterized fitter. A deeper analysis into the code of the parametrized fitter using Intel VTune showed that a substantial part of the computation time is spent in trivial calculations that are potentially easy to remove. Providing a very high return on investment, the parameterized fitter was an ideal first target for optimization.
+Figure \ref{fig_algo_usage_choice} shows the relative CPU time the algorithms take on a pie chart. It can be seen that the largest fraction, 47.1\% is consumed by the parameterized fitter. A deeper analysis into the code of the parameterized fitter using Intel VTune showed that a substantial part of the computation time is spent in trivial calculations that are potentially easy to remove. Providing a very high return on investment, the parameterized fitter was an ideal first target for optimization.
 
 
 \subsection{The global data model}
@@ -383,7 +383,7 @@ Having the vectorization friendly data model in place, the rest of the team was 
 % === PARAMETRIZED KALMAN ===
 %----------------------------------------------------------------------------
 \newpage
-\section{Parametrized Kalman Fitter}\label{sec_kalman_main}
+\section{Parameterized Kalman Fitter}\label{sec_kalman_main}
 
 As described in \ref{sec_reco_sw_overview}, the track is reconstructed incrementally, start with velo hits, extended by UT hits and finally adding the FT hits. This process, however, is not so accurate. This manifests itself in the creation of \textit{ghost tracks} and missed tracks, and generally, tracks are only roughly aligned with the hits they were made from. Ghost tracks are tracks that did not exist in the real collision, they are merely artifacts of the reconstruction algorithms. As such, ghost tracks are highly undesirable, but the Kalman fitter helps to weed them out. 
 The Kalman fitter basically refines the rough tracks that are spit out by preceding algorithms. The state of a particle can be described by its position, direction, and the quotient of its charge and momentum. The Kalman fitter first estimates the particle's state at its birth position based on the VELO hits alone. After that, it extrapolates the state of the particle to the next hit, or in other words, simulates the particle's travel until the next hit using the laws of physics. The new, \textit{predicted} state will have some deviation from the \textit{observed} state (that is, the hit), however, the Kalman fitter can make a mathematically optimal estimate for the true state based on the prediction and observation. The very new optimal state estimate will then be extrapolated to the next hit again, and this repeats for all the hits of the track.
