@@ -894,12 +894,34 @@ Vectorization, in the ideal case, can speed up code execution by 8 times. Though
 
 \subsection{Related Work}
 
-The improvements mentioned in \ref{sec_data_model_possible_improvements} have been implemented by the rest of the team and led to exception improvements in throughput with no compromise on physics performance.
+The improvements mentioned in \ref{sec_data_model_possible_improvements} have been implemented by the rest of the team and led to very significant improvements in throughput with no compromise on physics performance.
 
+\begin{table}[H]
+	\centering
+	\begin{tabular}{c | c | c}
+		& Throughput & Rel. throughput \\
+		\hline
+		Original data model & 38697.4 event/second & 100\% \\
+		\hline
+		Vectorization-friendly data-model & 43753.2 event/second & 113.0\% \\
+		\hline
+		Vect.-friendly data-model + vect. & 54452.2 event/second & 140.7\%
+	\end{tabular}
+	\caption{Runtimes of the different configurations.}
+	\label{tbl_datamodel_speedup_simd}
+\end{table}
 
+Table \ref{tbl_datamodel_speedup_simd} shows the improvements achieved by the SOA data model and vectorization for the subset of the particle path reconstruction that decodes the VELO hits and constructs the VELO track only. As per the second row, replacing the old data model with a new, cache and SIMD friendly, simplified model already increases performance by 13\%. The main reason for the change is however that it allows vectorization, which as seen in the table increases performance by over 40\%. 
+\vspace{1pc}
 
-\textcolor{red}{TODO: by Sebastien: "explain that the problem was then taken over by other people that implemented your ideas, including SOA and vectorization. Give numbers on the huge gains achieved"}
+{
+	\small
+	Figures based on the work of Arthur Marius Hennequin and can be accessed via LHCb's CI suite. Links:
+	\href{http://lhcbpr-hlt.web.cern.ch/lhcbpr-hlt/PerfTests/UpgradeThroughput/Throughput_lhcb-head.2269_VeloOnly_x86_64+avx2+fma-centos7-gcc8-opt_2019-06-15_08:35:21_+0200/}{original},
+	\href{http://lhcbpr-hlt.web.cern.ch/lhcbpr-hlt/PerfTests/UpgradeThroughput/Throughput_lhcb-head.2270_VeloOnly_x86_64+avx2+fma-centos7-gcc8-opt_2019-06-16_08:37:10_+0200/}{new data model},
+	\href{http://lhcbpr-hlt.web.cern.ch/lhcbpr-hlt/PerfTests/UpgradeThroughput/Throughput_lhcb-head.2270_VeloOnlySIMD_x86_64+avx2+fma-centos7-gcc8-opt_2019-06-16_07:03:15_+0200/}{new data model + vectorization}.
 
+}
 
 %----------------------------------------------------------------------------
 % === VELOUT OPT ===
@@ -1458,15 +1480,25 @@ Despite reducing the amount of computation and vectorizing everything, the metho
 \newpage
 \section{Conclusion}
 
-{
-	\color{red}
-	TODO:
-	- summarize my own contributions \\
-	- summarize achieved results \\
-	- make conclusions about them \\
-	- how it affects the future \\
-	BRIEFLY
-}
+This thesis touched three main topics:
+\begin{itemize}
+	\item Generic performance optimizations of the Kalman track fitter
+	\item Modernizing the data model of the LHCb's first level trigger
+	\item Leveraging vectorization to speed up the VELO-UT tracking
+\end{itemize}
+For the first task, streamlining the existing algorithm, removing unnecessary parts and simplifying the code resulted in a roughly two-fold speedup of the subject code.
+
+The second task enabled the team to move towards the vectorization of the entire performance-critical code without losing performance gains in data layout conversions. Although significant speedup has already been achieved, the long term effects are even more favourable.
+
+The third task made use of the new data model to vectorize an existing part of the code. The VELO-UT tracking has been sped up by about a factor of three.
+\vspace{1pc}
+
+This thesis work confirmed yet again how much code's performance can be improved with the right tools and coding practices. The work on the Kalman fitter has shown the importance of keeping the code clean and simple not only for readability but also for performance. The fastest code is the one that never runs. The new data model has highlighted the importance of understanding and utilizing modern CPU's features and avoiding their weaknesses. Writing cache-friendly and branchless code is essential. Finally, the latest instruction sets of modern CPUs allow hardware-based acceleration of specific tasks. SIMD instruction such as AVX and utility instructions such as BMI can improve performance significantly for scientific workloads.
+\vspace{1pc}
+
+Regarding the future, it is important to keep the code easy to change and to use programming abstractions that facilitate the migration to new CPU features as they come. As the majority of the software has not been vectorized yet, optimization efforts have to be extended to other areas of the code. The new data model, although functional, could definitely do with improvements to its interface to provide easier use and better safety.
+As for the VELO-UT tracker, the physics performance is slightly lower than expected. It has to be investigated weather this is an issue, and if so, it needs to be fixed by slight modifications to the algorithm. Additionally, the aligned hit finding was not vectorized. Since that part takes up a significant portion of the CPU time, more performant methods could be implemented.
+
 
 
 %----------------------------------------------------------------------------
@@ -1586,7 +1618,7 @@ The \textit{best physics} and \textit{best throughput} configurations are mentio
 The \textit{best physics} case includes complete processing of all data and an additional track fitting via the Kalman filter at the end. This, however, produces a generally low throughput. The \textit{best throughput} configuration introduces filtering early in the processing chain to keep only relevant tracks for further processing. Unfortunately, this filtering makes certain physics analyses impossible. Additionally, the final filtering may be reduced or omitted altogether for the \textit{best throughput} configuration.
 
 
-% ------------------------------------------------------------------------------
+%----------------------------------------------------------------------------
 % END DOCUMENT
-% ------------------------------------------------------------------------------
+%----------------------------------------------------------------------------
 \end{document}
