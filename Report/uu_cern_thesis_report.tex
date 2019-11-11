@@ -118,20 +118,34 @@ The resulting performance-optimized code uses today's many-core, data-parallel, 
 
 \section*{Abbreviations}
 
-\textcolor{red}{All these are defined in the text, others people should probably just know or google.}
-
 \begin{itemize}
-	\item DRAM: Dynamic Random Access Memory
-	\item CCD: Charge-Coupled Device
-	\item SIMD: Single Instruction Multiple Data
-	\item SOA: Structure Of Array
+	\item ALICE: A Large Ion Collider Experiment
 	\item AOS: Array Of Structures
-	\item FPGA: Field Programmable Gate Array
-	\item POD: Plain Old Data
+	\item ATLAS: A Toroidal LHC ApparatuS
 	\item AVX: Advanced Vector eXtensions
-	\item CMOV: Conditionally MOVe
+	\item CCD: Charge Coupled Device
+	\item CERN:  Conseil Européen pour la Recherche Nucléaire
+	\item CMS: Compact Muon Solenoid
+	\item CPU: Central Processing Unit
+	\item DRAM: Dynamic Random Access Memory
 	\item FMA: Fused Multiply-Add
-	\item IPC: Instruction Per Cycle
+	\item FP: Floating Point
+	\item FPGA: Field Programmable Gate Array
+	\item FT: (Scintillating) Fiber Tracker
+	\item IPC: Instructions Per Cycle
+	\item ISA: Instruction Set Architecture
+	\item LHC: Large Hadron Collider
+	\item LHCb: Large Hadron Collider beaty
+	\item OS: Operating System
+	\item PCB: Printed Circuit Board
+	\item POD: Plain Old Data
+	\item RICH: Ring Imaging CHerenkov (detector)
+	\item SIMD: Single Instruction Multiple Data
+	\item SOA: Structure Of Arrays
+	\item SSE: Streaming SIMD Extensions 
+	\item TT: Trigger Tracker
+	\item UT: Upstream Tracker
+	\item VELO: VErtex LOcator
 \end{itemize}
 
 
@@ -157,10 +171,9 @@ Particle accelerators accelerate charged particles to high velocities using magn
 	\begin{center}
 		\includegraphics[width=0.5\textwidth]{particle_accelerator_schematic}
 	\end{center}
-	\caption{Simplified schematic of a circular particle accelerator with the crucial functional parts labeled.}
+	\caption{Simplified schematic of a circular particle accelerator with the crucial functional parts labeled. \cite{accelerator_image_src_1}}
 	\label{fig_part_accel_schematic}
 \end{figure}
-\textcolor{red}{TODO: add reference}
 
 Particle accelerators can be circular or linear. Figure \ref{fig_part_accel_schematic} depicts a circular accelerator, which consists of the following parts:
 \begin{itemize}
@@ -185,11 +198,11 @@ Linear accelerators contain the same functional elements as circular ones, but t
 Colliders have two beams right next to each-other, but the particles are revolving in the opposite directions. This is achieved either by having two beam pipes (as in the LHC) or the two beams sharing the same beam pipe (like in LEP). At some specific points, the beams are crossed and the bunches collide with each other. It is important to mention that even though a bunch contains about $1.2\cdot 10^11$ protons\cite{lhc_facts_and_figures} in case of the LHC, the protons are so small thus the bunch is so sparse that only about 40 proton-proton collisions occur (in case of the ATLAS experiment) per bunch collision.
 
 
-\subsection{The accelerator complex}\label{sec_accel_complex}\textcolor{red}{TODO: try to add a ref}
+\subsection{The accelerator complex\cite{cern_accel_complex}}\label{sec_accel_complex}
 
 \begin{figure}[H]
 	\includegraphics[width=\textwidth]{accelerator_complex}
-	\caption{Schematic view of CERN's particle accelerators and experiments. LHC is shown on top by the largest circle. The four main experiments, CMS, ALICE, ATLAS and LHCb are marked with yellow dots along the LHC's circle.\cite{cern_accel_complex}}
+	\caption{Schematic view of CERN's particle accelerators and experiments. LHC is shown on top by the largest circle. The four main experiments, CMS, ALICE, ATLAS and LHCb are marked with yellow dots along the LHC's circle. \cite{cern_document_server}.}
 	\label{fig_accel_complex}
 \end{figure}
 
@@ -203,10 +216,9 @@ The LHC, shown in dark blue, is the subject of this thesis project. The LHC is a
 
 \begin{figure}[H]
 	\includegraphics[width=\textwidth]{lhcb_geometry_upgrade}
-	\caption{Side view of the LHCb detector.}
+	\caption{Side view of the LHCb detector. \cite{tracker_tdr}}
 	\label{fig_lhcb_geometry}
 \end{figure}
-TODO: ref
 
 Figure \ref{fig_lhcb_geometry} shows the LHCb detector from the side, the two beams of the LHC go in the horizontal direction on the drawing, through the middle of the detector. The detector is both vertically and horizontally symmetric to the beampipe.
 
@@ -221,20 +233,18 @@ The LHCb detector's coordinate system is used for calculations. The Z axis point
 
 \begin{figure}[H]
 	\includegraphics[width=\textwidth]{intro_lhcb_coordinate_systems}
-	\caption{The different coordinate systems used in the LHCb cavern.}
+	\caption{The different coordinate systems used in the LHCb cavern. \cite{lhcb_coordinate_systems}}
 	\label{fig_lhcb_coordinate_systems}
 \end{figure}
-TODO: ref
 
 
 \subsubsection{Operating principles}\label{sec_lhcb_det_theory}
 
 \begin{figure}[H]
 	\includegraphics[width=\textwidth]{lbevent_collision_example}
-	\caption{Particles created in a real collision and their interaction with the detector.}
+	\caption{Particles created in a real collision and their interaction with the detector. \cite{lb_event_display}}
 	\label{fig_lhcb_lbevent_collision}
 \end{figure}
-TODO:ref
 
 
 Figure \ref{fig_lhcb_lbevent_collision} shows one particle collision event's results. The particles that were born in the collision are shown by the orange lines. The three aforementioned detectors, the VELO, UT and FT, can be identified by the origin of the orange particles, the pink cloud of lines and the bright blue cloud lines, respectively. The green and yellow cubic illustrations on the far-end of the detector belong to other sub-detectors, and are out of the scope of this paper.
@@ -245,10 +255,9 @@ The VELO is a small detector, it measures less than a meter in length. It is a s
 	\begin{center}
 		\includegraphics[width=0.5\textwidth]{detector_velo_real}
 	\end{center}
-	\caption{The 26 layers of one half of the VELO. The pixels reside on the silver area, the PCB around contains the reading electronics, and the wedge at the top-center of the silver area is where the beam passes through.}
+	\caption{The 26 layers of one half of the VELO. The pixels reside on the silver area, the PCB around contains the reading electronics, and the wedge at the top-center of the silver area is where the beam passes through. \cite{cern_document_server}}
 	\label{fig_detector_velo_real}
 \end{figure}
-TODO: ref
 
 The UT (see \ref{fig_detector_ut_ft_drawing}) is a silicon strip detector which consists of long fibers which act much like a pixel as they also signal if a particle passes through them at any point along their length. A fiber of the UT is generally 10 centimeters long, and has a width of only 192 micrometers. This means that while on one axis, the particles position can be told with great accuracy, on the other axis the uncertainty if 10 centimeters. The entire detector measures about 1.7 meters in width and 1.4 meter in height.
 
@@ -258,10 +267,9 @@ Similarly to the UT, the FT is also a silicon strip detector, but the length of 
 	\begin{center}
 		\includegraphics[width=0.5\textwidth]{detector_ut_ft_drawing}
 	\end{center}
-	\caption{The UT in purple and the FT in blue, with a person next to them to illustrate the scale. The silicon strips are aligned vertically, leading to a good horizontal resolution but a poor vertical resolution.}
+	\caption{The UT in purple and the FT in blue, with a person next to them to illustrate the scale. The silicon strips are aligned vertically, leading to a good horizontal resolution but a poor vertical resolution. \cite{tracker_image}}
 	\label{fig_detector_ut_ft_drawing}
 \end{figure}
-TODO: ref
 
 In between the UT and the FT, a strong magnet is placed which bends the particles on the horizontal axis.
 
@@ -303,7 +311,7 @@ The pre-upgrade detector did the real-time event processing in two stages. The f
 		\caption{Trigger data flow\\ scheme post-upgrade}
 		\label{fig_trigger_compare_sub2}
 	\end{subfigure}
-	\caption{Comparison of the two triggering solutions}
+	\caption{Comparison of the two triggering solutions. \cite{lhcb_twiki}}
 	\label{fig_trigger_compare}
 \end{figure}
 
@@ -777,7 +785,6 @@ struct FtTrack {
 
 The algorithms and their input and output are best illustrated with a graph. The decoders return a plain vector of hits. The tracking algorithms operate on the track stubs and the hits, and write out the extended tracks and the estimated states of the particle. Note that since the \code{Track} and are split, the VELO-UT tracker is able to consume only the particular states that it needs.
 
-\textcolor{red}{TODO: too small, remake vertical?}
 \begin{figure}[H]
 	\begin{center}
 		\includegraphics[width=1\textwidth]{datamodel_track_flow}
@@ -814,7 +821,7 @@ Thanks to the plain old data (POD) structures, vectorization is easier, however 
 The removal of the unused members of the track object resulted in a very significant, 17\% gain in the best physics configuration. The realization of the split \code{Track} object between the VELO and the VELO-UT tracker alone resulted in a 4.8\% gain in overall performance. Unfortunately, I wasn't able to measure performance in different configurations and with the entire network of algorithms refactored because of project management policies.
 
 
-\subsection{Possible improvements}
+\subsection{Possible improvements}\label{sec_data_model_possible_improvements}
 
 The primary goal of restructuring the data model was not actually to create a highly performant one, but to create a stepping stone for more efficient data models, therefore multiple improvements can be realized.
 
@@ -887,6 +894,10 @@ Vectorization, in the ideal case, can speed up code execution by 8 times. Though
 
 \subsection{Related Work}
 
+The improvements mentioned in \ref{sec_data_model_possible_improvements} have been implemented by the rest of the team and led to exception improvements in throughput with no compromise on physics performance.
+
+
+
 \textcolor{red}{TODO: by Sebastien: "explain that the problem was then taken over by other people that implemented your ideas, including SOA and vectorization. Give numbers on the huge gains achieved"}
 
 
@@ -915,7 +926,7 @@ The algorithm takes roughly 10 percent of the pipeline, so while it is currently
 	\begin{center}
 		\includegraphics[width=0.9\textwidth]{detector_ut_geometry}
 	\end{center}
-	\caption{Illustration of the key elements of the UT hardware.}
+	\caption{Illustration of the key elements of the UT hardware. \cite{tracker_tdr}}
 	\label{fig_ut_geometry}
 \end{figure}
 
@@ -1291,10 +1302,15 @@ As the space partitioning is a new workload that wasn't present in the original 
 
 Overall, the optimized algorithm is 2.57x faster with GCC and 2.18x faster with Clang. When the space partitioning is excluded, the numbers are 3.46x and 2.80x, respectively. These numbers fall short to what one would expect by using 8-way SIMD instruction, however they better represent reality. As previously mentioned, a significant portion of the code remained scalar as it was difficult or practically impossible to vectorize and some of the vectorized code suffers from inefficiencies due to small amount of data in the vectorized loops. Additionally, the original non-vectorized code gets auto-vectorized by the compilers, which further shifts the balance. Overall, the speedup if still significant and worthwhile.
 
+It is worth noting, however, that according to Amdahl's law, with about 75\% of the code vectorized with 8 parallel processors, the theoretical maximum gain is about 3x faster. Relating this to the measured numbers, the results are decent. There is an additional factor however, that the algorithm was slightly changed and uses the microarchitecture better regardless of the vectorization, which means the comparison with Amdahl's law is not perfect.
 
-\textcolor{red}{TODO: by Sebastien: "make a ref on Amdahl's law and the fact that with 75\% of the code vectorizable, the optimal vectorized code gets only a x3 speedup. So you're actually quite good here. Take graph from wikipedia.}
-
-\textcolor{red}{my note: vectorization is not the only factor as I changed the algorithm as well with the space partitioning, which makes reasoning about Amdahl's law impossible in isolation. Somehow talk about both? Use roofline analysis?}
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=\textwidth]{amdahls_law}
+	\end{center}
+	\caption{Amdahl's law shows how the performance gain is limited by the amount of remaining serial code.}
+	\label{fig_amdahls_law}
+\end{figure}
 
 
 \subsubsection{Microarchitecture usage, bottlenecks}
@@ -1329,7 +1345,8 @@ The most notable difference is the complete absence of bad speculation problems.
 
 Unfortunately, the algorithm is still the most heavily bound by memory accesses. VTune highlights L1 memory accesses similarly to the unoptimized version, but it does not indicate any specific issue in connection with L1. I examined the code of the gathering of the hits for data dependencies that could cause high L1 latencies, but it does not seem to show any. On the other hand, the code needs to read a lot of data, and does minimal calculation on it in comparison. Though this case is not mentioned in the documentation by Intel, a toy example of adding two small arrays that fit in L1 using vectorized instructions results in a heavily memory bound program according to VTune. Based on that, it simply seems like L1 is unable to serve the execution units of the CPU with enough data when the operations they do are too simple and fast. Since the algorithm already uses SOA data layouts and vector register loads to read only the most necessary data in the largest possible chunks, this is most likely a characteristic of the algorithm.
 
-\textcolor{red}{TODO: use roofline to check if code is ideal. See Omar Awile's talk in lhcb software tutorials.}
+%\textcolor{red}{TODO: use roofline to check if code is ideal. See Omar Awile's talk in lhcb software tutorials.}
+% I'm lazy plus I don't even have a machine that runs AVX2...
 
 \vspace{1pc}
 
@@ -1371,11 +1388,68 @@ Figure \ref{fig_velout_without_alloc} shows that without any special memory allo
 
 \subsection{Alternative VELO-UT algorithms}\label{sec_velout_alternative}
 
-\textcolor{red}{TODO:}
+One of the main steps of the VELO-UT algorithm is to find hits in the UT that align to form a nearly straight line. Unfortunately, this step is serial code and it is very difficult is at all possible to vectorize, leading to slow performance. In order to produce code that is more easily vectorizable, I experimented with alternative methods to find a set of UT hits that align both with each other and a VELO track. While the methods did not work as expected, they are worth noting as they may work in different contexts.
 
 \subsubsection{Parabola extrapolation of VELO tracks}
 
+The first solution I tested was to extrapolate the straight VELO tracks through the UT. For the extrapolated section of the tracks, I used a parabola that smoothly aligns with the VELO track on one end and coincides with a hit from the last layer of the UT. As the next step, the single closest hit from the remaining 3 UT layers are assigned to the extrapolated track.
+
+Since there may be multiple last-layer UT hits for each VELO track that fall within a certain window of the track's line, there will also be multiple extrapolated candidates per VELO track. To select the best candidate, the distance of the hits from the parabola are summed, and one candidate with the least error is selected.
+
+The advantage of this method is that it eliminates the expensive and serial combinatorics involved in finding 4 aligned UT hits. Solely the last layer and the VELO tracks are used to seed extrapolated candidates, and once the data structures are built, calculating the parameters of the parabolas can be parallelized. The assignment of hits from the other layers is also straightforward as it can be parallelized over the hits within a window close to the parabola, and the problem is simply to pick the hit nearest.
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=.75\textwidth]{velout_parabola_fit}
+	\end{center}
+	\caption{Straight VELO tracks are extended by a parabola that align closely with UT hits.}
+	\label{fig_velout_parabola_fit}
+\end{figure}
+
+
+Unfortunately, the algorithm did not produce good results form the physics perspective. In reality, the uncertainty in the VELO tracks' direction and position is too large so when extrapolated just linearly, the corresponding UT hits often lie on both sides of the line. In such a case, the parabola that is constrained to the VELO track's line on one end will show significant deviation from the real hits no matter its parameters. This means the extrapolation will pick up incorrect hits or will have errors too large to be taken as a valid solution.
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=.75\textwidth]{velout_parabola_misfit}
+	\end{center}
+	\caption{How hits are often placed in reality. Note the hits marked in red, falling on the other side of the line of the VELO track, being largely misaligned with the parabola adjusted to the last-layer hit.}
+	\label{fig_velout_parabola_misfit}
+\end{figure}
+
+
 \subsubsection{Hough-transform/gradient descent hybrid line finding}
+
+The experiment with parabola extrapolation showed that the key is not the alignment of hits to the VELO track, but finding four hits that themselves align on a straight line very well. (The straight line is reasonable despite the slight bend of the particles due the magnetic field, especially as this is optimized for high-momentum particles that bend only a little.) The original line aligned hit finding extrapolates the VELO track as a straight lines and selects hits from each layer within a certain window of that line. Then each combination of four hits is tested if they lie on a straight line. While there are early exit conditions, such as not being able to find even a third aligned hit, this code is still poorly vectorizable and generally expensive because of the sheer number of combinations to be tested. The code also scales very poorly, as the more hits there are the exponentially more combinations it has to test.
+\vspace{1pc}
+
+A method that has a better time complexity to find lines in such a scenario is the Hough-transform\cite{wiki_hough_transform}. To construct the Hough space, one has to loop over all points, then increase all the pixels in the feature that correspond to a line through the point in subject. As this was not optimal for vectorization and low amount of calculation, I did it the other way around. For each point in the Hough space, I calculated how far the line represented by the Hough space point is from each of the image space and summed the distances up. Vectorizing over the Hough space is easy, and the task is now reduced to a minimum finding in the Hough space.
+
+\begin{figure}[H]
+	\centering
+	\begin{subfigure}{.5\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{velout_hough_points}
+		\caption{Points among which trying to find alignment}
+		\label{fig_velout_hough_points}
+	\end{subfigure}%
+	\begin{subfigure}{.5\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{velout_hough_param_space}
+		\caption{Corresponding Hough space in high resolution}
+		\label{fig_velout_hough_param_space}
+	\end{subfigure}
+	\caption{Among the points, we can spot the four on the diagonal that form a straight line. The parameters of this line correspond to the deep blue spot in the lower-middle part of the Hough-space. Less deep blues represent lines that go through 2 or 3 points.}
+	\label{fig_velout_branch_example}
+\end{figure}
+
+To construct the Hough space, it was not enough to simply take the distance of the point and the line. Instead, I ran the distance through a function that converges to 1 at either ends and has a downwards bump in the middle with $f(0)$ being zero. This is the cause of the narrow greenish bands and the large yellow plateaus. Theoretically, one could run a gradient descent on the surface and find the absolute minimum with random search.
+\vspace{1pc}
+
+In the actual implementation, I did not do gradient descent on the high resolution image, but instead reduced the Hough space to be as small as 16 by 8 pixels. This was enough to specify the line with sufficient accuracy, and was small enough for the amount of calculation to be reasonable. Notice that in this case, there are three nested loops: 8 iterations over the width, 16 iterations over the height and iterations through all points/hits. The outer loop of 8 iterations corresponds to the SIMD width and is thus reduced to a single CPU instruction. In place of gradient descent, the 8-by-16 pixel area was brute-force searched for the smallest element using SIMD.
+\vspace{1pc}
+
+Despite reducing the amount of computation and vectorizing everything, the method did not work as its computation time was still too much. This is an interesting example where an $O(n!)$ algorithm (although with early exits) beats an $O(n)$ algorithm due to the large difference in constants.
 
 
 %----------------------------------------------------------------------------
@@ -1404,7 +1478,7 @@ Figure \ref{fig_velout_without_alloc} shows that without any special memory allo
 \begin{thebibliography}{asd}
 	\bibitem{cern_about} About CERN: \\
 		\url{https://home.cern/about}
-	\bibitem{cern_accel_complex} The accelerator complex: \\
+	\bibitem{cern_accel_complex} CERN's accelerator complex: \\
 		\url{https://home.cern/about/accelerators}
 	\bibitem{lhc_desc} About the Large Hadron Collider: \\
 		\url{https://home.cern/topics/large-hadron-collider}
@@ -1427,11 +1501,27 @@ Figure \ref{fig_velout_without_alloc} shows that without any special memory allo
 	\bibitem{god_class_wiki} God class anti-pattern: \\
 		\url{https://en.wikipedia.org/wiki/God_object}
 	\bibitem{lemire_simd_prune} Pruning with AVX2: \\
-		\url{https://github.com/lemire/simdprune} 
+		\url{https://github.com/lemire/simdprune}
 	\bibitem{intel_vtune_docs} Documentation of microarchitecture analysis by Intel: \\
 		\url{https://software.intel.com/en-us/vtune-amplifier-help-core-bound}\\
 		\url{https://software.intel.com/en-us/vtune-amplifier-help-l1-bound}\\
 		\url{https://software.intel.com/en-us/vtune-amplifier-cookbook-top-down-microarchitecture-analysis-method}
+	\bibitem{accelerator_image_src_1} Particle accelerators:\\
+		\url{http://universe-review.ca/R15-20-accelerators01.htm}
+	\bibitem{lhcb_coordinate_systems} LHCb Coordinate Systems:\\
+		\url{https://edms.cern.ch/ui/file/372642/1/LHCb-coord-system.pdf}
+	\bibitem{lb_event_display} LHCb Event Display:\\
+		\url{https://lbevent.cern.ch/EventDisplay/index.html}
+	\bibitem{tracker_image} L.B.A. Hommels: The LHCb outer tracker detector design and production\\
+		\url{https://www.researchgate.net/publication/4154465_The_LHCb_outer_tracker_detector_design_and_production}
+	\bibitem{lhcb_twiki} LHCB Wiki:\\
+		\url{https://twiki.cern.ch/}
+	\bibitem{cern_document_server} CERN Document Server:\\
+		\url{cds.cern.ch}
+	\bibitem{lhcb_tracking_strategies} LHCB Tracking Strategies:\\
+		\url{https://twiki.cern.ch/twiki/bin/view/LHCb/LHCbTrackingStrategies}
+	\bibitem{wiki_hough_transform} Hough-transform:\\
+		\url{https://en.wikipedia.org/wiki/Hough_transform}
 \end{thebibliography}
 
 
@@ -1467,9 +1557,36 @@ Figure \ref{fig_velout_without_alloc} shows that without any special memory allo
 
 \section{LHCb track types}
 
+Throughout the document, there are several \textit{track types} mentioned. In LHCb, tracks are classified based on which sub-detectors they interact with and which direction they have.
+\vspace{1pc}
+
+\noindent We differentiate the following track types:
+\begin{itemize}
+	\item Backwards track: exits the VELO the direction opposite of the other sub-detectors (not shown on figure \ref{fig_lhcb_track_types})
+	\item Velo track: seen in the VELO, but does not interact with any other sub-detector
+	\item Upstream track: interacts with the VELO and the UT/TT
+	\item Long track: interacts with all three of the VELO, UT/TT and FT
+	\item Downstream track: interacts with the UT/TT and the FT (e.g. particle decay products from displaced secondary vertices)
+	\item T track: only seen in the FT (decay products, similarly)
+\end{itemize}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=\textwidth]{lhcb_track_types}
+	\end{center}
+	\caption{Different track shown on the schematic of the LHCb detector.}
+	\label{fig_lhcb_track_types}
+\end{figure}
+
+
 \section{LHCb software configurations}
 
-best physics and best throughput cases etc explained
+The \textit{best physics} and \textit{best throughput} configurations are mentioned throughout the text. The LHCb trigger does not have one fixed implementation, rather, the parts it is made of can be combined and configured differently. Generally, performance (that is, throughput) can be traded for physics accuracy. There are several configurations tested at all times so that a good compromise between physics accuracy and throughput can be selected. The \textit{best physics} and \textit{best throughput} configurations are the two extremes.
+
+The \textit{best physics} case includes complete processing of all data and an additional track fitting via the Kalman filter at the end. This, however, produces a generally low throughput. The \textit{best throughput} configuration introduces filtering early in the processing chain to keep only relevant tracks for further processing. Unfortunately, this filtering makes certain physics analyses impossible. Additionally, the final filtering may be reduced or omitted altogether for the \textit{best throughput} configuration.
 
 
+% ------------------------------------------------------------------------------
+% END DOCUMENT
+% ------------------------------------------------------------------------------
 \end{document}
