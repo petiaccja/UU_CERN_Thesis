@@ -1066,7 +1066,16 @@ In addition to performance problems, as the code is not clearly structured, opti
 \end{figure}
 
 Figure \ref{fig_velout_branch_example} shows the overall CPU microarchitecture usage of the current hit gathering compared to the new one. The low percentage of retiring instructions (35.5\%) is alarming. Additionally, 28.1\% of instructions are dropped due to branch mispredictions, which confirms the source code analysis that flow control is excessively complex and shows how much it impacts performance.
-
+\newpage
+\lstinputlisting[
+	caption=Hit gathering for the original VELO-UT,
+	label=lst_velout_gatherhits_original,
+	language=C++,
+	firstline=277,
+	lastline=332,
+	firstnumber=277]
+	{source_code/PrVeloUT.cpp}
+\newpage
 
 \subsubsection{Finding aligned hits}
 
@@ -1564,28 +1573,19 @@ As for the VELO-UT tracker, the physics performance is slightly lower than expec
 \appendix
 
 \newpage
-\section{Code listings}
-
-\subsection{Original VELO-UT's hit gathering}
-\lstinputlisting[
-	caption=Hit gathering for the original VELO-UT,
-	label=lst_velout_gatherhits_original,
-	language=C++,
-	firstline=277,
-	lastline=332,
-	firstnumber=277]
-	{source_code/PrVeloUT.cpp}
-\newpage
 
 \section{Intel VTune Amplifier XE}
 
-\section{CPU pipelining}
+The document includes many screenshots of Intel's VTune Amplifier XE. VTune is an advanced performance profiler that measures how long certain parts of the code take to execute. It operates by pausing the profiled process a few hundred or thousand times every second and noting down which line of code was executing at the moment of the pause. Over roughly a minute, VTune gathers enough samples so that they are largely statistically correct. In other words, if 90\% of the samples have been recorded for one line and 10\% of the samples for the other, the first line takes roughly 90\% of the CPU time while the latter takes 10\%.
+\vspace{1pc}
 
-\section{Memory hierarchy of modern computers}
+In addition to line-based timing information, VTune also gathers complete stack traces, thus it can show the relative or absolute time certain functions have taken. VTune can visualize the relationship between function in multiple ways.
+\vspace{1pc}
 
-\section{Inlining}
+Alongside the \textit{hotspots} profiling described above, VTune also can also analyze microarchitecture, threading and memory usage. Microarchitecture refers to how well the program utilizes the available functional units of the CPU, such as memory load/store, floating point unit, integer arithmetic and divider. Modern CPUs are able to perform multiple independent integer operations at the same time or overlap memory transfers with arithmetic. VTune attempts to highlight issues with pipelining or imbalanced load such as overstressed divider. VTune also helps analyze memory usage issues by providing information on main memory bandwidth, cache utilization and cache misses.
+\vspace{1pc}
 
-\section{Vectorization}
+More information can be found on Intel's website: \url{https://software.intel.com/en-us/vtune}.
 
 \section{LHCb track types}
 
