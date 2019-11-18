@@ -1323,7 +1323,7 @@ I acquired the results by running the code on a Haswell computer, looping over t
 		\hline
 		Optimized & 9403 ms & 9744 ms \\
 		\hline
-		Opt. w/o SP & 6971 ms & 7589 ms
+		Opt. excl. SP & 6971 ms & 7589 ms
 	\end{tabular}
 	\caption{Runtimes of the different configurations.}
 	\label{tbl_runtimes_local}
@@ -1596,9 +1596,9 @@ Throughout the document, there are several \textit{track types} mentioned. In LH
 \begin{itemize}
 	\item Backwards track: exits the VELO the direction opposite of the other sub-detectors (not shown on figure \ref{fig_lhcb_track_types})
 	\item Velo track: seen in the VELO, but does not interact with any other sub-detector
-	\item Upstream track: interacts with the VELO and the UT/TT
-	\item Long track: interacts with all three of the VELO, UT/TT and FT
-	\item Downstream track: interacts with the UT/TT and the FT (e.g. particle decay products from displaced secondary vertices)
+	\item Upstream track: interacts with the VELO and the UT
+	\item Long track: interacts with all three of the VELO, UT and FT
+	\item Downstream track: interacts with the UT and the FT (e.g. particle decay products from displaced secondary vertices)
 	\item T track: only seen in the FT (decay products, similarly)
 \end{itemize}
 
