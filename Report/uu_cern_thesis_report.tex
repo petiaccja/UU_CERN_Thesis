@@ -12,13 +12,28 @@
 \usepackage[a4paper, total={16cm, 23.7cm}]{geometry}
 \usepackage[colorlinks=true,urlcolor=blue]{hyperref}
 \usepackage{color}
+\usepackage{titlesec}
+\usepackage{fontspec}
+\usepackage{ragged2e}
 
 % Compiler/IDE directives
 % !TeX spellcheck = en_US
+% !TEX program = xelatex
 
 % General
-\fontfamily{phv}
+\defaultfontfeatures{Ligatures=TeX}
+\setmainfont{Cambria}
+\setsansfont{Arial}
+\setmonofont{Consolas}
+
+\titleformat{\section}{\sffamily\Large\bfseries}{\thesection}{1em}{}
+\titleformat{\subsection}{\sffamily\large\bfseries}{\thesubsection}{1em}{}
+\titleformat{\subsubsection}{\sffamily\normalsize\bfseries}{\thesubsubsection}{1em}{}
+\titleformat{\paragraph}[runin]{\normalfont\normalsize\bfseries}{\theparagraph}{1em}{}
+\titleformat{\subparagraph}[runin]{\normalfont\normalsize\bfseries}{\thesubparagraph}{1em}{}
+
 \captionsetup{width=0.8\textwidth}
+
 
 % Graphicx
 \graphicspath{ {./images/} }
@@ -96,7 +111,7 @@ The resulting performance-optimized code uses today's many-core, data-parallel, 
 
 I wish to express my gratitude to Sebastien Ponce, whose guidance, help and advice have been vital to the success of my thesis work and to my integration into the LHCb project.
 
-\noindent Appreciation is due to Anca-Juliana Stoica for her great efforts to improve the quality of this thesis paper.
+\noindent Appreciation is due to Anca-Juliana Stoica for her great efforts to improve the quality of this thesis project report.
 
 \noindent I am also grateful to Marco Clemencic, Sascha Stahl, Arthur Marius Hennequin, Michel De Cian, Paul Seyfert, and the rest of the LHCb team for their contributions, advice and discussions.
 
@@ -112,12 +127,14 @@ I wish to express my gratitude to Sebastien Ponce, whose guidance, help and advi
 	\tableofcontents
 }
 
+\newpage
 {
 	\small
 	\hypersetup{linkcolor=black}
 	\listoffigures
 }
 
+\newpage
 {
 	\small
 	\hypersetup{linkcolor=black}
@@ -134,7 +151,6 @@ I wish to express my gratitude to Sebastien Ponce, whose guidance, help and advi
 %----------------------------------------------------------------------------
 % === GLOSSARY ===
 %----------------------------------------------------------------------------
-
 
 \section*{Abbreviations}
 
@@ -182,7 +198,7 @@ I wish to express my gratitude to Sebastien Ponce, whose guidance, help and advi
 	\item Cache \& data layout optimization: transform code taking into consideration the internal behaviour of the CPUs' multi-level cache architecture and future goals such as vectorization.
 	\item Event: the collision of two LHC particle beam bunches inside the LHCb detector.
 	\item Hit: the unique identifier of a single pixel or fiber of a subdetector that was hit by a particle in an event.
-	\item Hotspots: the few small, independent parts of the code that consume the vast majority of CPU execution time.
+	\item Hotspots: the few small, independent parts of the code that consume the vast majority of CPU execution time. Important for performance analysis and optimization.
 	\item Momentum: as in momentum of a particle, $\Vec{p}=m\Vec{v}$.
 	\item Multi-threading: using multiple operating system threads to do computation work in parallel.
 	\item Node: as in part of a \textit{server farm} or supercomputer; a normal server computer, running its own operating system on its own hardware resources.
@@ -206,7 +222,7 @@ I wish to express my gratitude to Sebastien Ponce, whose guidance, help and advi
 
 \subsubsection{Idea and purpose}\label{sec_part_accel_idea}
 
-CERN (European Organization for Nuclear Research) is an international high energy experimental physics research organization situated near Geneva, on the Franco-Swiss border. CERN's research is based around its infrastructure of several particle accelerators, including the world's largest particle accelerator. Physics research data is obtained from colliding the accelerated particles, and is meant to probe the fundamental laws of the universe. In general, research is organized into \textit{experiments}, each of which examines a particular physics phenomenon. Experiments are using the particle accelerator infrastructure, but have their own devices for the experiment's specific goals.
+CERN (European Organization for Nuclear Research) is an international high energy experimental physics research organization situated near Geneva, on the Franco-Swiss border. CERN's research is based around its infrastructure of several particle accelerators, including the world's largest particle accelerator. Physics research data is obtained from colliding the accelerated particles, and is meant to investigate the fundamental laws of the universe. In general, research is organized into \textit{experiments}, each of which examines a particular physics phenomenon. Experiments are using the particle accelerator infrastructure, but have their own devices for the experiment's specific goals.
 \cite{cern_about}
 
 \vspace{1pc}\noindent
@@ -242,7 +258,7 @@ Linear accelerators contain the same functional elements as circular ones, but t
 
 \subsubsection{Particle colliders}\label{sec_part_collider}
 
-Colliders have two beams right next to each-other, but the particles are revolving in the opposite directions. This is achieved either by having two beam pipes (as in the LHC) or the two beams sharing the same beam pipe (like in LEP). At some specific points, the beams are crossed and the bunches collide with each other. It is important to mention that even though a bunch contains about $1.2\cdot 10^11$ protons\cite{lhc_facts_and_figures} in case of the LHC, the protons are so small thus the bunch is so sparse that only about 40 proton-proton collisions occur (in case of the ATLAS experiment) per bunch collision.
+Colliders have two beams right next to each-other, but the particles are revolving in the opposite directions. This is achieved either by having two beam pipes (as in the LHC) or the two beams sharing the same beam pipe (like in LEP). At some specific points, the beams are crossed and the bunches collide with each other. It is important to mention that even though a bunch contains about $1.2\cdot 10^{11}$ protons\cite{lhc_facts_and_figures} in case of the LHC, the protons are so small thus the bunch is so sparse that only about 40 proton-proton collisions occur (in case of the ATLAS experiment) per bunch collision.
 
 
 \subsection{The accelerator complex}\label{sec_accel_complex}
@@ -253,7 +269,7 @@ Colliders have two beams right next to each-other, but the particles are revolvi
 	\label{fig_accel_complex}
 \end{figure}
 
-As seen on \ref{fig_accel_complex}, CERN hosts a complex system of particle accelerators\cite{cern_accel_complex}.
+As seen on figure \ref{fig_accel_complex}, CERN hosts a complex system of particle accelerators\cite{cern_accel_complex}.
 The LHC, shown in dark blue, is the subject of this thesis project. The LHC is a particle collider, the energy of individual particles reaches about 7 TeVs at maximum. The particle collisions occur at 4 points, marked CMS, ALICE, LHCb and ATLAS. At these points, particle detectors are installed to analyze the collisions. Detectors track the path of the particles and measure their properties such as momentum, charge and mass. Using these properties, particles can be identified. The raw data provided by the detectors is processed by software.
 
 
@@ -273,10 +289,10 @@ As seen on the labels, the detector consists of multiple layers of sub-detectors
 
 The goal of the LHCb detector is the same as for all other detectors: reconstruct the paths and types of the particles. Even though full reconstruction uses all sub-detectors, we are only interested in partial reconstruction that can be done in real-time. This only involves the VELO, the UT (in orange, right of VELO) and the FT (SciFi Tracker, in the middle in orange).
 
-
+\newpage
 \subsubsection{Coordinate system}\label{sec_coordinate_system}
 
-The LHCb detector's coordinate system is used for calculations. The Z axis points down the beamline, the Y axis points upwards and the X axis to the left (as seen when looking down the Z axis). The LHC itself and civil engineering works use different labelling or alignment for the their coordinate axes.
+The LHCb detector's coordinate system (pictured on figure \ref{fig_lhcb_coordinate_systems}) is used for calculations. The Z axis points down the beamline, the Y axis points upwards and the X axis to the left (as seen when looking down the Z axis). The LHC itself and civil engineering works use different labelling or alignment for the their coordinate axes compared to the LHCb experiment.
 
 \begin{figure}[H]
 	\includegraphics[width=\textwidth]{intro_lhcb_coordinate_systems}
@@ -287,18 +303,18 @@ The LHCb detector's coordinate system is used for calculations. The Z axis point
 
 \subsubsection{Operating principles}\label{sec_lhcb_det_theory}
 
-\begin{figure}[H]
+\begin{figure}[h]
 	\includegraphics[width=\textwidth]{lbevent_collision_example}
-	\caption[A particle collision event in LHCb]{Particles created in a real collision and their interaction with the detector. \cite{lb_event_display}}
+	\caption[A particle collision event in LHCb]{Particles created in a real collision and their interactions with the detector. \cite{lb_event_display}}
 	\label{fig_lhcb_lbevent_collision}
 \end{figure}
 
 
-Figure \ref{fig_lhcb_lbevent_collision} shows one particle collision event's results. The particles that were born in the collision are shown by the orange lines. The three aforementioned detectors, the VELO, UT and FT, can be identified by the origin of the orange particles, the pink cloud of lines and the bright blue cloud lines, respectively. The green and yellow cubic illustrations on the far-end of the detector belong to other sub-detectors, and are out of the scope of this paper.
+Figure \ref{fig_lhcb_lbevent_collision} shows one particle collision event's results. The particles that were born in the collision are shown by the orange lines. The three aforementioned detectors, the VELO, UT and FT, can be identified by the origin of the orange particles, the pink cloud of lines and the bright blue (not teal) cloud of lines, respectively. The green and yellow cubic illustrations on the far-end of the detector belong to other sub-detectors, and are out of the scope of this paper.
 
-The VELO is a small detector, it measures less than a meter in length. It is a silicon pixel detector, which looks much like a modern CCD camera: a rectangular array of pixels which detect light (or in this case, particles) that hit it. The difference is that particle detectors don't absorb the particle, rather, it passes through largely undisturbed. Additionally, the VELO consists of 26 such CCD-like rectangles, instead of just one.
+The VELO is a small detector, it measures less than a meter in length. It is a silicon pixel detector, which looks much like a modern CCD camera: a rectangular array of pixels which detect light (or in this case, particles) that hit it. The difference is that particle detectors don't absorb the particle, rather, it passes through mostly undisturbed. Additionally, the VELO consists of 26 such CCD-like rectangles, instead of just one. (Pictured on figure \ref{fig_detector_velo_real}.)
 
-\begin{figure}[H]
+\begin{figure}[h]
 	\begin{center}
 		\includegraphics[width=0.5\textwidth]{detector_velo_real}
 	\end{center}
@@ -306,9 +322,9 @@ The VELO is a small detector, it measures less than a meter in length. It is a s
 	\label{fig_detector_velo_real}
 \end{figure}
 
-The UT (see \ref{fig_detector_ut_ft_drawing}) is a silicon strip detector which consists of long fibers which act much like a pixel as they also signal if a particle passes through them at any point along their length. A fiber of the UT is generally 10 centimeters long, and has a width of only 192 micrometers. This means that while on one axis, the particles position can be told with great accuracy, on the other axis the uncertainty is 10 centimeters. The entire detector measures about 1.7 meters in width and 1.4 meter in height.
+The UT (see on figure \ref{fig_detector_ut_ft_drawing}) is a silicon strip detector which consists of long fibers which act much like a pixel as they also signal if a particle passes through them at any point along their length. A fiber of the UT is generally 10 centimeters long, and has a width of only 192 micrometers. This means that while on one axis, the particles position can be told with great accuracy, on the other axis the uncertainty is 10 centimeters. The entire detector measures about 1.7 meters in width and 1.4 meter in height.
 
-Similarly to the UT, the FT is also a silicon strip detector, but the length of its fibers is 2.5 meters. This means the 5 meter tall detector needs only two fibers to cover the full height.
+Similarly to the UT, the FT (figure \ref{fig_detector_ut_ft_drawing}) also a silicon strip detector, but the length of its fibers is 2.5 meters. This means the 5 meter tall detector needs only two fibers to cover the full height.
 
 \begin{figure}[H]
 	\begin{center}
@@ -338,6 +354,7 @@ The LHC has 2808 bunches of protons in the accelerator at a time, for both beams
 The vast majority of the 30 million events that occur every second are absolutely uninteresting, with no exotic particles of interest being created. On the other hand, so many events together produce a significant amount of data which is a challenge to store. To reduce the amount of data written to permanent storage, each event is processed in real-time to determine weather it is interesting or not. Uninteresting events are simply dropped, the interesting ones are stored long-term for offline analysis. The act of deciding if an event has to be stored is called \textit{triggering}. The real-time processing of events is a simplified method that relies on the VELO, UT and FT detectors as described previously.
 
 
+\newpage
 \subsection{The 2019/20 upgrade of LHCb}\label{sec_lhcb_upgrade}
 
 The LHC shuts down for maintenance for two years from the end of 2018. The LHCb detector also undergoes maintenance and upgrade during that time, where the VELO is upgraded and the old TT is entirely replaced by the UT.
@@ -365,7 +382,7 @@ The pre-upgrade detector did the real-time event processing in two stages. The f
 
 \subsection{Overview of the real-time processing software}\label{sec_reco_sw_overview}
 	
-\begin{figure}[H]
+\begin{figure}[h]
 	\begin{center}
 		\includegraphics[width=0.6\textwidth]{algorithms_brunel}
 	\end{center}
@@ -373,7 +390,7 @@ The pre-upgrade detector did the real-time event processing in two stages. The f
 	\label{fig_algorithms_brunel}
 \end{figure}
 
-The real-time processing software consists of algorithms which do a specific piece of the reconstruction of the particle paths. In addition to the reconstruction, there are other algorithms which do the selection of interesting events. Since the selection algorithms are generally a lot faster than reconstruction algorithms, they are excluded from this discussion.
+The real-time processing software consists of algorithms which do a specific piece of the reconstruction of the particle paths. (Figure \ref{fig_algorithms_brunel} illustrates how these algorithms connect into a graph.) In addition to the reconstruction, there are other algorithms which do the selection of interesting events. Since the selection algorithms are generally a lot faster than reconstruction algorithms, they are excluded from this discussion.
 
 The general principle behind reconstruction is that a list of hits (where a pixel or silicon strip was hit) are given, and regular alignment of the hits indicate the path of the particle: hence the name \textit{pattern recognition}. Once all particles have been found by gathering the hits they created, they can be identified and fed into the selection decision making.
 
@@ -391,10 +408,10 @@ Finally, the \textbf{fitter} uses all the hits to align the particles path more 
 As explained in \ref{sec_lhcb_upgrade}, the abandonment of the hardware trigger stage highly increases the load on the software trigger. To cope with the load in a cost-efficient manner, both a hardware and a software upgrade will take place. Regarding the hardware upgrade, a new computing farm with the latest many-core server processors will be built. This thesis, however, focuses on the software upgrade.
 
 \vspace{1pc}
-The majority of the code was written a decade ago, made to perform well in those environments. Since then, hardware changed substantially. The most prominent change is the appearance of many-cores on a single processor die -- up to 40-60 cores as opposed to 2-4 cores back then. It is no longer enough to start a process for each core, because the duplication of shared static memory resources consumes an unacceptable amount of memory. The application was, however, not prepared to efficiently handle multithreading. The gap between CPU speed and memory speeds has grown even more. It is now crucial to use minimalist, cache efficient data structures to avoid being bound by memory. Modern processors also introduced data-parallelism on the instruction level with extensions such as SSE, AVX and AVX-512. Making use of these instruction sets requires special attention to data structures and explicit code on behalf of the programmer. In return, data-parallelism can achieve a performance of up to 16 times higher than that of plain, scalar code*.
+The majority of the code was written a decade ago, made to perform well in those environments. Since then, hardware changed substantially. The most prominent change is the appearance of many-cores on a single processor die -- up to 40-60 cores as opposed to 2-4 cores back then. It is no longer enough to start a process for each core, because the duplication of shared static memory resources consumes an unacceptable amount of memory. The application was, however, not prepared to efficiently handle multithreading. The gap between CPU speed and memory speeds has grown even more. It is now crucial to use minimalist, cache efficient data structures to avoid being bound by memory. Modern processors also introduced data-parallelism on the instruction level with extensions such as SSE, AVX and AVX-512. Making use of these instruction sets requires special attention to data structures and explicit code on behalf of the programmer. In return, data-parallelism can achieve a performance of up to 16 times higher than that of plain, scalar code\footnote{In case of AVX-512, not accounting for downclocking}.
 
 \vspace{1pc}
-After a determined optimization effort, the team eliminated main bottlenecks from the software, such as excessive locking due to the lack of thread safe design, extremely slow algorithms and pre-computable calculations. Despite that, as of September 2018 (when I began working on this thesis project), a threefold speedup** was still required to achieve the target throughput of 30 million events per second processed. Should the throughput stay below the threshold, unprocessed events will be dropped, reducing the amount of valuable data collected, limiting the physics research potential of the experiment.
+After a determined optimization effort, the team eliminated main bottlenecks from the software, such as excessive locking due to the lack of thread safe design, extremely slow algorithms and pre-computable calculations. Despite that, as of September 2018 (when I began working on this thesis project), a threefold speedup\footnote{Threefold for the best-throughput configuration, the acceptable case; six fold for the best-physics configuration, the ideal case} was still required to achieve the target throughput of 30 million events per second processed. Should the throughput stay below the threshold, unprocessed events will be dropped, reducing the amount of valuable data collected, limiting the physics research potential of the experiment.
 
 \subsubsection{Contributions of this thesis project}
 
@@ -407,12 +424,6 @@ This thesis project provides solutions to the optimization of three major parts 
 \end{enumerate}
 The means of optimization are introducing minimalistic, cache efficient data structures, vectorizing code, reducing branching and eliminating heavy/inefficient instructions. Additionally, general code design improvements and code modernization also plays a part in increasing both performance and maintainability. The speedups achieved by this work should help the LHCb collaboration to increase event-processing throughput to the required threshold.
 
-\vspace{1pc}
-\small
-\noindent\tab* In case of AVX-512, not accounting for downclocking\\
-\noindent\tab** Threefold for the best-throughput configuration, the acceptable case; six fold for the best-physics configuration, the ideal case
-\normalsize
-
 
 %----------------------------------------------------------------------------
 % === OPTIMIZATION TARGETS ===
@@ -422,7 +433,7 @@ The means of optimization are introducing minimalistic, cache efficient data str
 
 \subsection{The parameterized Kalman fitter}
 
-The software's built-in profiler measures the execution time of individual algorithms.
+The software's built-in profiler measures the execution time of individual algorithms. Figure \ref{fig_algo_usage_choice} shows the relative CPU time the algorithms take on a pie chart. It can be seen that the largest fraction, 47.1\% is consumed by the parameterized fitter. A deeper analysis into the code of the parameterized fitter using Intel VTune showed that a substantial part of the computation time is spent in trivial calculations that are potentially easy to remove. Providing a very high return on investment, the parameterized fitter was an ideal first target for optimization.
 
 \begin{figure}[H]
 	\begin{center}
@@ -431,8 +442,6 @@ The software's built-in profiler measures the execution time of individual algor
 	\caption{Workload distribution among trigger software algorithms, mid 2018}
 	\label{fig_algo_usage_choice}
 \end{figure}
-
-Figure \ref{fig_algo_usage_choice} shows the relative CPU time the algorithms take on a pie chart. It can be seen that the largest fraction, 47.1\% is consumed by the parameterized fitter. A deeper analysis into the code of the parameterized fitter using Intel VTune showed that a substantial part of the computation time is spent in trivial calculations that are potentially easy to remove. Providing a very high return on investment, the parameterized fitter was an ideal first target for optimization.
 
 
 \subsection{The global data model}
@@ -451,7 +460,7 @@ Having the vectorization friendly data model in place, the rest of the team was 
 \newpage
 \section{Parameterized Kalman Fitter}\label{sec_kalman_main}
 
-As described in \ref{sec_reco_sw_overview}, the track is reconstructed incrementally, start with VELO hits, extended by UT hits and finally adding the FT hits. This process, however, is not so accurate. This manifests itself in the creation of \textit{ghost tracks} and missed tracks, and generally, tracks are only roughly aligned with the hits they were made from. Ghost tracks are tracks that did not exist in the real collision, they are merely artifacts of the reconstruction algorithms. As such, ghost tracks are highly undesirable, but the Kalman fitter helps to weed them out. 
+As described in \ref{sec_reco_sw_overview}, the track is reconstructed incrementally, starting with VELO hits, extending with UT hits and finally adding the FT hits. This process, however, is not so accurate. This manifests itself in the creation of \textit{ghost tracks} and missed tracks, and generally, tracks are only roughly aligned with the hits they were made from. Ghost tracks are tracks that did not exist in the real collision, they are merely artifacts of the reconstruction algorithms. As such, ghost tracks are highly undesirable, but the Kalman fitter helps to weed them out. 
 The Kalman fitter basically refines the rough tracks that are spit out by preceding algorithms. The state of a particle can be described by its position, direction, and the quotient of its charge and momentum. The Kalman fitter first estimates the particle's state at its birth position based on the VELO hits alone. After that, it extrapolates the state of the particle to the next hit, or in other words, simulates the particle's travel until the next hit using the laws of physics. The new, \textit{predicted} state will have some deviation from the \textit{observed} state (that is, the hit), however, the Kalman fitter can make a mathematically optimal estimate for the true state based on the prediction and observation. The very new optimal state estimate will then be extrapolated to the next hit again, and this repeats for all the hits of the track.
 As a result, the estimated state or path of the particle aligns more closely with the observed hits. In the case of ghost tracks, we can expect to have large deviations between the optimal estimated states and the observed hits, which could have slipped through initial reconstruction algorithms but show up for the fitter. Such tracks are removed from the list of tracks, and that's why fitting is important.
 
@@ -478,7 +487,7 @@ There is a major and obvious problem however: just acquiring the data on which t
 
 \subsection{Loading hits in detail}
 
-Careful examination reveals the way hits are loaded through the so-called \textit{Measurement providers}.
+Careful examination reveals the way hits are loaded through the so-called \textit{measurement providers}.
 	
 \begin{figure}[H]
 	\begin{center}
@@ -488,9 +497,9 @@ Careful examination reveals the way hits are loaded through the so-called \texti
 	\label{fig_kalmanfit_loadhits_schematic}
 \end{figure}
 
-When a particle hits a detector, the identifier of the element of the detector that was hit is recorded. (Detector elements are analogous to the pixels of a digital CCD camera.) These elements are basically unambiguously identified by the so-called \textit{LHCbIDs} (represented by an integer), so it is enough to store the IDs inside the Track object and all information (such as location of the hit, measurement error) can be recovered. 
+When a particle hits a detector, the identifier of the element of the detector that was hit is recorded. (Detector elements are analogous to the pixels of a digital CCD camera.) These elements are basically unambiguously identified by the so-called \code{LHCbIDs} (represented by an integer), so it is enough to store the IDs inside the Track object and all information (such as location of the hit, measurement error) can be recovered. 
 
-Over the years however, this system grow unnecessarily complex resulting in a dramatic slowdown. Clusters, containing some basic information about the hit, such as its location, are stored inside measurement providers as a large array. In order to find the cluster that corresponds to the ID, this whole array is searched linearly. Once the cluster is found, a \textit{Measurement} object is allocated on the heap and initialized from it. Finally, another object, called a \textit{trajectory}, is queried from the measurement, from which the data actually required can be extracted. The storage of clusters and creation of measurements is handled by \textit{MeasurementProviders}. Additionally, we can distinguish separate measurement objects for the VELO, UT and FT hits.
+Over the years however, this system grow unnecessarily complex resulting in a dramatic slowdown. Clusters, containing some basic information about the hit, such as its location, are stored inside measurement providers as a large array. In order to find the cluster that corresponds to the ID, this whole array is searched linearly. Once the cluster is found, a \textit{Measurement} object is allocated on the heap and initialized from it. Finally, another object, called a \textit{Trajectory}, is queried from the measurement, from which the data actually required can be extracted. The storage of clusters and creation of measurements is handled by \textit{MeasurementProviders}. Additionally, we can distinguish separate measurement objects for the VELO, UT and FT hits.
 
 As seen, this is a convoluted process, involving an asymptotically unacceptable linear search and a lot of dynamic memory allocation. Dynamic allocation is not only slow, it highly suffers from thread contention at the operating system level in our multi-threaded software. Additionally, the individually allocated objects are scattered around in memory, resulting in poor CPU cache performance.
 
@@ -564,7 +573,7 @@ To trade physics quality for performance, event culling decisions can be made ea
 	\begin{center}
 		\includegraphics[width=0.6\textwidth]{algo_usage_original_bestthru}
 	\end{center}
-	\caption{Distribution of CPU time among algorithms in the \textit{best throughput} case with early event culling}
+	\caption{Distribution of CPU time among algorithms in the best throughput case with early event culling}
 	\label{fig_algo_usage_original_bestthru}
 \end{figure}
 
@@ -581,7 +590,7 @@ Figure \ref{fig_algo_usage_original_bestthru} shows the best throughput case whe
 	\label{fig_kalman_disasm_src_naive}
 \end{figure}
 
-Looking at the disassembly, we can see two \textit{CALL} instructions, which correspond to the two function calls \textit{MakeFitterHit} and \textit{emplace\_back}. This means that the functions haven't been inlined. Inlining is a complex topic, because it can make code faster by removing function prologues, but excessive inlining can also make code slower by polluting the instruction caches with too many repeated code snippets. In this case, the latter is unlikely, since these function are only present at this location, so inlining would be preferable.
+Looking at the disassembly, we can see two \code{CALL} instructions, which correspond to the two function calls \code{MakeFitterHit} and \code{emplace\_back}. This means that the functions haven't been inlined. Inlining is a complex topic, because it can make code faster by removing function prologues, but excessive inlining can also make code slower by polluting the instruction caches with too many repeated code snippets. In this case, the latter is unlikely, since these function are only present at this location, so inlining would be preferable.
 
 \begin{figure}[H]
 	\begin{center}
@@ -590,36 +599,36 @@ Looking at the disassembly, we can see two \textit{CALL} instructions, which cor
 	\begin{center}
 		\includegraphics[width=0.9\textwidth]{kalmanfit_disasm_opt_asm_inlined}
 	\end{center}
-	\caption[Code growth performance mitigated]{Source code and disassembly after manually inlining \textit{MakeFitterHit} inside the \textit{for} loop.}
+	\caption[Code growth performance mitigated]{Source code and disassembly after manually inlining \code{MakeFitterHit} inside the \code{for} loop.}
 	\label{fig_kalman_disasm_src_inlined}
 \end{figure}
 
-As can be seen on figure \ref{fig_kalman_disasm_src_inlined}, both \textit{CALL} instruction have disappeared. The first one for \textit{MakeFitterHit} due to the manual inlining, and the second for \text{emplace\_back} because of the compiler automatically inlining it. Note that the automatic inlining was enabled by passing the constructor arguments of \textit{TrackHit} to \textit{emplace\_back} instead of the ready object, exactly as \textit{emplace\_back} was meant to be used. Now, theoretically, the compiler could optimize out both cases as their semantics are equivalent, but it is apparently not capable of doing so.
+As can be seen on figure \ref{fig_kalman_disasm_src_inlined}, both \code{CALL} instruction have disappeared. The first one for \code{MakeFitterHit} due to the manual inlining, and the second for \code{emplace\_back} because of the compiler automatically inlining it. Note that the automatic inlining was enabled by passing the constructor arguments of \code{TrackHit} to \code{emplace\_back} instead of the ready object, exactly as \code{emplace\_back} was meant to be used. Now, theoretically, the compiler could optimize out both cases as their semantics are equivalent, but it is apparently not capable of doing so.
 
-Besides the absence of function calls, there is another thing noticeable on the assembly instruction. There is a large number of instructions moving quad words (\textit{MOVSD}), that is 64 bit double precision numbers. Furthermore, the \textit{CVTSS2SD} instructions are converting 32 bit single precision numbers to 64 bit doubles. Looking at the source code, we can indeed notice that input data from which the \textit{TrackHit} is made is stored as single precision floats, but the \textit{TrackHits} themselves are double precision because the fitter is using double precision calculations. Changing \textit{TrackHit} to store single floats as well, thus delaying the conversion, will hurt performance at another place where it has less of an impact.
+Besides the absence of function calls, there is another thing noticeable on the assembly instruction. There is a large number of instructions moving quad words (\code{MOVSD}), that is 64 bit double precision numbers. Furthermore, the \code{CVTSS2SD} instructions are converting 32 bit single precision numbers to 64 bit doubles. Looking at the source code, we can indeed notice that input data from which the \code{TrackHit} is made is stored as single precision floats, but the \code{TrackHits} themselves are double precision because the fitter is using double precision calculations. Changing \code{TrackHit} to store single floats as well, thus delaying the conversion, will hurt performance at another place where it has less of an impact.
 
 \begin{figure}[H]
 	\begin{center}
 		\includegraphics[width=0.9\textwidth]{kalmanfit_disasm_opt_asm_nocvt}
 	\end{center}
-	\caption{Disassembly after changing \textit{TrackHits} to store single floats.}
+	\caption{Disassembly after changing \code{TrackHits} to store single floats.}
 	\label{fig_kalman_disasm_src_nocvt}
 \end{figure}
 
-The disassembly on figure \ref{fig_kalman_disasm_src_nocvt} clearly shows that the single precision to double precision conversions are gone just like the \textit{PXOR} instructions, and now it only moves double word memory units. With this little change, I managed to throw out lots of unnecessary instruction and the amount of memory moved around is also smaller.
+The disassembly on figure \ref{fig_kalman_disasm_src_nocvt} clearly shows that the single precision to double precision conversions are gone just like the \code{PXOR} instructions, and now it only moves double word memory units. With this little change, I managed to throw out lots of unnecessary instruction and the amount of memory moved around is also smaller.
 
-Due to the complex interactions inside modern, pipelined CPUs and between the CPU, the DRAM and caches, it is hard to explain how and why the changes affected the performance. Nevertheless, inlining and trimming the assembly code has increased performance of the \textit{best throughput} scenario with early event culling from 13300 events per second to around 13700. Notably, the basic case without my code changes has produced about 14500 events per second. \small (As measured with my development branch on our performance test machines during development.) \normalsize
+Due to the complex interactions inside modern, pipelined CPUs and between the CPU, the DRAM and caches, it is hard to explain how and why the changes affected the performance. Nevertheless, inlining and trimming the assembly code has increased performance of the best throughput scenario with early event culling from 13300 events per second to around 13700. Notably, the basic case without my code changes has produced about 14500 events per second. \small (As measured with my development branch on our performance test machines during development.) \normalsize
 
 
 \subsection{Results, conclusion}
 
-I managed to significantly increase the throughput of the \textit{best physics} case from 4450 events per second to 5870 events per second, or a 32\% increase. Unfortunately, the \textit{best throughput} case slowed down from 14500 events/sec to about 13700, or 5\% decrease in throughput. The speedup can be explained by removing unnecessary work by simplifying the code. The slowdown of the \textit{best throughput case} can be attributed to overall making the \code{Track} object slightly heavier and its creation more expensive, and the reduced weight of the code that got faster can't make up for it anymore. This is still acceptable, however, as the modifications to the \code{Track} are only temporary and should disappear with future clean-up and refactoring of the data model.
+I managed to significantly increase the throughput of the best physics case from 4450 events per second to 5870 events per second, or a 32\% increase. Unfortunately, the best throughput case slowed down from 14500 events/sec to about 13700, or 5\% decrease in throughput. The speedup can be explained by removing unnecessary work by simplifying the code. The slowdown of the best throughput case can be attributed to overall making the \code{Track} object slightly heavier and its creation more expensive, and the reduced weight of the code that got faster can't make up for it anymore. This is still acceptable, however, as the modifications to the \code{Track} are only temporary and should disappear with future clean-up and refactoring of the data model.
 
 \begin{figure}[H]
 	\begin{center}
 		\includegraphics[width=0.7\textwidth]{kalmanfit_throughput_results_lowquality}
 	\end{center}
-	\caption[Throughput improvement by the Kalman fitter optimization]{Throughput of the particle path reconstruction before and after my modifications, for the \textit{best physics} and \textit{best throughput} cases.}
+	\caption[Throughput improvement by the Kalman fitter optimization]{Throughput of the particle path reconstruction before and after my modifications, for the best physics and best throughput cases.}
 	\label{fig_kalmanfit_results_throughput}
 \end{figure}
 
@@ -637,7 +646,7 @@ Another interesting figure to look at is how the weight of the parameterized Kal
 		\includegraphics[width=\linewidth]{algo_usage_optkalman_bestphys}
 		\caption{After optimizations}
 	\end{subfigure}
-	\caption[CPU time share of algorithms after Kalman fitter optimizations]{The distribution of processor time requirements of each algorithms. The parameterized Kalman fitter is identified by the label \textit{ForwardFitterAlgParamFast}.}
+	\caption[CPU time share of algorithms after Kalman fitter optimizations]{The distribution of processor time requirements of each algorithms. The parameterized Kalman fitter is identified by the label ForwardFitterAlgParamFast.}
 	\label{fig_kalmanfit_results_algousage}
 \end{figure}
 
@@ -670,7 +679,7 @@ The algorithms that constitute the processing chain are illustrated on figure \r
 	};	
 \end{lstlisting}
 
-In case of the trigger software, all tracks begin with the VELO. The VELO tracker finds hits that are aligned in a straight line and creates a \textit{VELO track} that is then forwarded to the VELO-UT tracker. The so called \textit{VELO tracks} contain the IDs of the pixels that were hit in the VELO detector, as well as the estimated state of the particle at its birth and when it left the VELO. Similarly, the VELO-UT tracker appends the IDs of the UT hits that it found as well as an additional state of the particle inside the UT detector.
+In case of the trigger software, all tracks begin with the VELO. The VELO tracker finds hits that are aligned in a straight line and creates a VELO track that is then forwarded to the VELO-UT tracker. The so called VELO tracks contain the IDs of the pixels that were hit in the VELO detector, as well as the estimated state of the particle at its birth and when it left the VELO. Similarly, the VELO-UT tracker appends the IDs of the UT hits that it found as well as an additional state of the particle inside the UT detector.
 
 
 \subsection{Connection of the data model and the algorithms}
@@ -819,7 +828,7 @@ Similarly, we can define further types of tracks:
 \begin{lstlisting}[
 	language=C++,
 	label=lst_datamodel_ut_ft_tracks,
-	caption=The UT (\textit{upstream}) and FT \textit{long} tracks also contain a reference to the track they were extended from.]
+	caption=The UT (\textit{upstream}) and FT (\textit{long}) tracks also contain a reference to the track they were extended from. (See figure \ref{fig_lhcb_track_types} for track types.)]
 struct UtTrack {
 	std::vector<UtHit> utHits;
 	const VeloTrack* veloSegment;
@@ -845,13 +854,10 @@ The algorithms and their input and output are best illustrated with a graph. The
 
 \subsubsection{Problem mitigation}
 
-As explained in \ref{sec_datamodel_issues}, there were several issues with the original data mode.
-
-\vspace{1pc}
 As it can be seen on the code snippets, the amount of code has been greatly reduced. Most notably, trivial getter and setter methods have been replaced by public members, and non-trivial getters have been extracted to free functions to where they are needed. Code that is not used in the context of the trigger or tracking has been removed permanently.
 
 \vspace{1pc}
-The number of memory allocations was somewhat reduced. The states are now stored in a contiguous array instead of one dynamic block for every track, and the ancestors have also been restructured to be implicit to the track types instead of a dynamically allocated vector per track. Hits, however, are still reside in per-track heap storage.
+The number of memory allocations was somewhat reduced. The states are now stored in a contiguous array instead of one dynamic block for every track, and the ancestors have also been restructured to be implicit to the track types instead of a dynamically allocated vector per track. Hits, however, still reside in a per-track heap storage.
 
 \vspace{1pc}
 Copies of dynamically allocated objects have been eliminated, since when an algorithm extends an existing track it stores a pointer to it along with the new track instead of making a copy of the track and modifying it with the extended parts.
@@ -925,7 +931,7 @@ The first notable difference between the SOA and AOS layouts is the memory acces
 
 In the AOS case, the \code{UtHit} structure takes up $6 \cdot 4 + 4 = 28$ bytes (and it has no padding), so the CPU is reading from a large array of 28 byte blobs. The first read to \code{hits[0].x0} pull in the next cache line, similarly. However, that cache line now contains \code{hits[0].y0}, \code{hits[0].z0}, \code{hits[0].y1} and so on, up to all members of \code{hits[1]} and some of \code{hits[2]}. As all the data is pulled in to the cache, to calculate the number of caches line we simply write $1024 \cdot 28 / 64 = 448$ cache lines. Due to the data members that are not actually used for the calculations, the CPU is forced to read 2.33 times more memory.
 
-This disparity in the amount of memory read may be hidden by the calculations, but in some cases can greatly increase performance.
+This disparity in the amount of memory read may be hidden by the calculations, but in some cases it can greatly affect performance.
 
 
 \subsubsection{Vectorization}
@@ -954,21 +960,19 @@ The improvements mentioned in \ref{sec_data_model_possible_improvements} have be
 		\hline
 		Vect.-friendly data-model + vect. & 54452.2 event/second & 140.7\%
 	\end{tabular}
-	\caption[Execution time of the VELO reconstruction algorithms]{Execution time of the VELO in relation to underlying data model and vectorization.}
+	\caption[Execution time of the VELO reconstruction algorithms]{Execution time of the 	VELO in relation to underlying data model and vectorization.}
 	\label{tbl_datamodel_speedup_simd}
 \end{table}
 
-Table \ref{tbl_datamodel_speedup_simd} shows the improvements achieved by the SOA data model and vectorization for the subset of the particle path reconstruction that decodes the VELO hits and constructs the VELO track only. As per the second row, replacing the old data model with a new, cache and SIMD friendly, simplified model already increases performance by 13\%. The main reason for the change is however that it allows vectorization, which as seen in the table increases performance by over 40\%. 
-\vspace{1pc}
-
-{
-	\small
-	Figures based on the work of Arthur Marius Hennequin and can be accessed via LHCb's CI suite. Links:
+Table \ref{tbl_datamodel_speedup_simd} shows the improvements achieved by the SOA data model and vectorization for the subset of the particle path reconstruction that decodes the VELO hits and constructs the VELO track only. As per the second row, replacing the old data model with a new, cache and SIMD friendly, simplified model already increases performance by 13\%. The main reason for the change is however that it allows vectorization, which as seen in the table increases performance by over 40\%.
+\footnote{
+	Numbers in the table are based on the work of Arthur Marius Hennequin and can be accessed via LHCb's CI suite. The links to the CI results are:
 	\href{http://lhcbpr-hlt.web.cern.ch/lhcbpr-hlt/PerfTests/UpgradeThroughput/Throughput_lhcb-head.2269_VeloOnly_x86_64+avx2+fma-centos7-gcc8-opt_2019-06-15_08:35:21_+0200/}{original},
 	\href{http://lhcbpr-hlt.web.cern.ch/lhcbpr-hlt/PerfTests/UpgradeThroughput/Throughput_lhcb-head.2270_VeloOnly_x86_64+avx2+fma-centos7-gcc8-opt_2019-06-16_08:37:10_+0200/}{new data model},
 	\href{http://lhcbpr-hlt.web.cern.ch/lhcbpr-hlt/PerfTests/UpgradeThroughput/Throughput_lhcb-head.2270_VeloOnlySIMD_x86_64+avx2+fma-centos7-gcc8-opt_2019-06-16_07:03:15_+0200/}{new data model + vectorization}.
+} 
+\vspace{1pc}
 
-}
 
 %----------------------------------------------------------------------------
 % === VELOUT OPT ===
@@ -1063,7 +1067,7 @@ The error of the fitting of a candidate can be calculated by determining how far
 	\label{fig_velout_hotspots_orig}
 \end{figure}
 
-As we can see, the VELO-UT algorithm spends most of its time gathering the UT hits that could potentially belong to a VELO tracks. The second largest portion is \textit{formClusters} which performs the search for aligned UT hits and also does a preliminary fit to determine the best candidate. The third largest unit is the creation of the output (the \textit{upstream} tracks) which performs a higher quality final fit and does some analysis to remove potentially undesirable tracks.
+As we can see on figure \ref{fig_velout_hotspots_orig}, the VELO-UT algorithm spends most of its time gathering the UT hits that could potentially belong to a VELO tracks. The second largest portion is \code{formClusters} which performs the search for aligned UT hits and also does a preliminary fit to determine the best candidate. The third largest unit is the creation of the output (the upstream tracks) which performs a higher quality final fit and does some analysis to remove potentially undesirable tracks.
 
 In light of this, the primary target for improvement is the largest chunk: gathering the hits, however, the other hotspots are also of significant interest.
 
@@ -1112,7 +1116,7 @@ In addition to performance problems, as the code is not clearly structured, opti
 	\label{fig_velout_branch_example}
 \end{figure}
 
-Figure \ref{fig_velout_branch_example} shows the overall CPU microarchitecture usage of the current hit gathering compared to the new one. The low percentage of retiring instructions (35.5\%) is alarming. Additionally, 28.1\% of instructions are dropped due to branch mispredictions, which confirms the source code analysis that flow control is excessively complex and shows how much it impacts performance.
+Figure \ref{fig_velout_branch_example} shows the overall CPU microarchitecture usage of the current hit gathering compared to my optimized version. The low percentage of retiring instructions (35.5\%) is alarming. Additionally, 28.1\% of instructions are dropped due to branch mispredictions, which confirms the source code analysis that flow control is excessively complex and shows how much it impacts performance.
 \newpage
 \lstinputlisting[
 	caption=Hit gathering for the original VELO-UT,
@@ -1126,7 +1130,7 @@ Figure \ref{fig_velout_branch_example} shows the overall CPU microarchitecture u
 
 \subsubsection{Finding aligned hits}
 
-The largest part of the hit finding function is in fact the fitting of the aligning track candidates. Fitting is a simple, linear stream of mathematical operation with no branching, thus makes a perfect candidate for vectorization. However, vectorization cannot be exploited unless it is completely separated from the alignment search.
+The largest part of the hit finding function is in fact the fitting of the aligning track candidates, as seen on figure \ref{fig_velout_hotspots_orig_formclusters}. Fitting is a simple, linear stream of mathematical operation with no branching, thus makes a perfect candidate for vectorization. However, vectorization cannot be exploited unless it is completely separated from the alignment search.
 
 \begin{figure}[H]
 	\begin{center}
@@ -1152,10 +1156,10 @@ The code violates several coding best practices, which is not strictly an optimi
 
 \subsubsection{Uniform grid space partitioning}\label{sec_velout_space_partitioning}
 
-For the logic part, I left the algorithm as it was as I could not find better alternatives (see \ref{sec_velout_alternative}), however I redesigned space partitioning from scratch.
+As far as the steps of the algorithm and logic is concerned, I left the algorithm as it was as I could not find better alternatives (see \ref{sec_velout_alternative}). However I redesigned space partitioning from scratch.
 \vspace{1pc}
 
-Space partitioning, most prominent in 3D graphics and physics simulations, is a technique to accelerate computations that are done on a large number of objects contained in a 3D space. Frequently, there are only significant interactions between nearby objects, so computations for the interactions of far away objects can be neglected. To be able to quickly list objects nearby to a 3D coordinate, I used the simplest space partitioning scheme: uniform grid. This method slices the 2D or 3D space by a uniform grid, and keeps a list of objects for each grid cell that fall into the cell. This way, to find objects near to a specific point, one only has to calculate the grid cell the point falls in (a few divisions) and read the list of that cell. (In some cases, the nearest four cells can be used not to miss any objects in case the specified point lies close to a grid line.) The logic of the grid-based lookup is vastly simpler than the sector-based lookup.
+Space partitioning, most prominent in 3D graphics and physics simulations, is a technique to accelerate computations that are done on a large number of objects contained in a 3D space. Frequently, there are only significant interactions between nearby objects, so computations for the interactions of far away objects can be neglected. To be able to quickly list objects nearby to a 3D coordinate, I used the simplest space partitioning scheme: uniform grid. This method slices the 2D or 3D space by a uniform grid, and keeps a list of objects for each grid cell that fall into the cell. This way, to find objects close to a specific point, one only has to calculate the grid cell the point falls in (a few divisions) and read the list of that cell. (In some cases, the nearest four cells can be used not to miss any objects in case the specified point lies close to a grid line.) The logic of the grid-based lookup is significantly simpler than the sector-based lookup.
 \vspace{1pc}
 
 Since there are 14  rows of sensors on every plane of the UT detector, I used a grid with 14 rows, carefully aligned to the geometrical position of the sensor rows. This ensures that a fiber falls entirely within its grid cell. For the half-height sensors in the middle, two sensors fall into the same grid cell. There are no such limits for the horizontal resolution of the grid cells, so the cell width can be set arbitrarily. As the search region in the order of a few centimeters, I chose to have 64 cells on the horizontal axis, resulting in a cell width of roughly 3 cm. The third axis - in the direction of the beamline - is divided so that each four panel of the UT falls into its own grid cell. To sum up, the grid is 64 x 14 x 4 cells (see figure \ref{fig_velout_space_partitioning}).
@@ -1238,7 +1242,7 @@ The steps illustrated on figures \ref{fig_velout_opt_datastruct_flow_p1} and \re
 
 The filtering algorithm takes a set of States that describe the VELO tracks, and decides which ones are possible to be be extended into a VELO-UT track. Thanks to the restructuring of the overall data structures by my colleagues, the VELO-UT algorithm now only receives so called \textit{forward tracks} (\ref{fig_lhcb_track_types}) that point towards the UT. Consequently, the filtering must only remove tracks that fall out of the acceptance of the UT, that is, miss all the panels of the UT and cannot produce any UT hits.
 
-Rephrasing the specification in computing terms, for the vector of a states, a vector of booleans has to be produced where each boolean indicates weather to keep the corresponding state, and then the vector of states needs to be collapsed to a new vector that only contains accepted states. Using SIMD, on can easily take 8 elements (on AVX ISA) from the rows of the states, thus do calculations on 8 states at once to produce 8 booleans. It is possible to efficiently leverage Intel's AVX2 instruction set to do the pruning of the 8 items at a good performance\cite{lemire_simd_prune}. First, the items of the 8-vector are permuted in order to bring the selected elements to the front of the vector and move the unused items at the back. Second, an unaligned memory store operation writes the entire 8 vector to the output data structure at a specific offset. For the next write, the offset is increased by the popcount (number of the selected items), which means the next write will simply overwrite the unselected items of the current operation. (See figure \ref{fig_velout_opt_simd_filter}.)
+Rephrasing the specification in computing terms, for the vector of a states, a vector of booleans has to be produced where each boolean indicates weather to keep the corresponding state, and then the vector of states needs to be collapsed to a new vector that only contains accepted states. Using SIMD, on can easily take 8 elements (on AVX ISA) from the rows of the states, thus do calculations on 8 states at once to produce 8 booleans. It is possible to efficiently leverage Intel's AVX2 instruction set to do the pruning of the 8 items at a good performance\cite{lemire_simd_prune}. First, the items of the 8-vector are permuted in order to bring the selected elements to the front of the vector and move the unused items at the back. Second, an unaligned memory store operation writes the entire 8-vector to the output data structure at a specific offset. For the next write, the offset is increased by the popcount (number of the selected items), which means the next write will simply overwrite the unselected items of the current operation. (See figure \ref{fig_velout_opt_simd_filter}.)
 
 \begin{figure}[H]
 	\begin{center}
@@ -1274,16 +1278,12 @@ The problem can be split into two parts:
 The x, y and z coordinates are given for each extrapolated state, the task is to figure out which grid cell they belong to. Given a uniformly partitioned axis, the bin index for a point can be calculated by evaluating
 \begin{center}
 	$t = (x_{state} - x_{min})/(x_{max} - x_{min})$\\
-	$i =  \lfloor t \cdot N \rfloor$	
+	$i =  \lfloor t N \rfloor$	
 \end{center}
 where $x_{min}$ and $x_{max}$ are the limits of the binned range and $N$ is the number of bins. The formula can be evaluated separately for the three axes, and it can be vectorized over 8 extrapolated states.
 
-To obtain the offset and number of hits for a bin inside the partitioned array of UT hits, a lookup table that is indexed by the bin indices is available. The lookup can be either a scalar operation, or, as implemented, it can use the AVX gather instructions. For older CPUs, there is not much difference, gather instruction may be even slower, however recent Intel CPUs seem to perform better using gathers$^*$. One iteration thus returns two SIMD 8-vectors containing the offsets and the number of hits, which means it's completely vectorized.
-\\
-{
-	\tiny
-	\tab *: \url{https://stackoverflow.com/questions/24756534/in-what-situation-would-the-avx2-gather-instructions-be-faster-than-individually}
-}
+To obtain the offset and number of hits for a bin inside the partitioned array of UT hits, a lookup table that is indexed by the bin indices is available. The lookup can be either a scalar operation, or, as implemented, it can use the AVX gather instructions. For older CPUs, there is not much difference, gather instruction may be even slower, however recent Intel CPUs seem to perform better using gathers\footnote{\href{https://stackoverflow.com/questions/24756534/in-what-situation-would-the-avx2-gather-instructions-be-faster-than-individually}{https://stackoverflow.com/questions/24756534/in-what-situation-would-the-avx2-gather-instructions-be-faster-than-individually}}. One iteration thus returns two SIMD 8-vectors containing the offsets and the number of hits, which means it's completely vectorized.
+
 
 \paragraph{Filtering the range of hits} \mbox{}\vspace{0.4pc}
 
@@ -1293,27 +1293,27 @@ Storage of these hits is similar to the method described in \ref{sec_velout_filt
 
 \paragraph{Double bins}\mbox{}\vspace{0.4pc}
 
-As described in \ref{sec_velout_space_partitioning}, not a single bin but instead two adjacent bins are used. This changes the step for getting the bin indices minimally. Two lookups are performed, one for the actual bin index and another for the next or previous bin index, depending on which one the sampled coordinate is closer. (Double sampling only applies to bins, not row or panel indices.) The range is then defined by the offset of the first bin and the sum of the sizes of both bins. The hit filtering is unaffected, as it still takes an offset and a size, not caring where those come from.
+As described in \ref{sec_velout_space_partitioning}, not a single bin but instead two adjacent bins are used. This changes the step for getting the bin indices minimally. Two lookups are performed, one for the actual bin index and another for the next or previous bin index, depending on which one the sampled coordinate is closer to. (Double sampling only applies to bins, not row or panel indices.) The range is then defined by the offset of the first bin and the sum of the sizes of both bins. The hit filtering is unaffected, as it still takes an offset and a size, not caring where those come from. This works, as the hits are stored in a big contiguous array, so the hits of two adjacent bins will occupy a contiguous region of the whole contiguous array.
 
 
 \subsubsection{Hit alignment search}
 
 The hit alignment search proved to be impractical to vectorize. The search algorithm operates on the nearby his gathered for a track. First, a pair of hits from two different panels are selected, a line is drawn through them, and the remaining two panels are searched for the hits closest to the line. In addition to the pair, an extra hit is accepted if it is within a threshold to the line. In case 3 or 4 hits (including the pair itself) were found that fall on the line, the track candidate is written to the output.
 
-One average, there are only 2 hits per track per panel, so vectorizing over one member of the pair, the other member of the pair, and the extra hits is not practical. Vectorizing over the tracks if not feasible either, as the number of hits in the four layers can be very different between the track, and branching would ruin the vectorization. Other attempts, such as producing all 3 or 4 hit combinations and then determining if they are on a line is also impractical, as the generation would either be scalar code or inefficient vectorized code.
+One average, there are only 2 hits per track per panel, so vectorizing over one member of the pair, the other member of the pair, and the extra hits is not practical. Vectorizing over the tracks if not feasible either, as the number of hits in the four layers can be very different between the tracks, and branching would ruin the vectorization. Other attempts, such as producing all 3 or 4 hit combinations and then determining if they are on a line, are also impractical, as the generation would either be scalar code or inefficient vectorized code.
 
 
 \subsubsection{Custom memory allocation} \label{sec_velout_stack_alloc}
 
-With the optimized version of the VELO-UT algorithm, up to 20\% of the computation time was spent with memory allocation. The cost of memory allocation in an application depends most on the number of allocations, not the size of the allocations. Large allocations are much cheaper per byte allocated, so it is worth allocating an array for all objects upfront instead of allocating each object individually. The optimized VELO-UT algorithm uses this technique, however, the SOA data layouts require the allocation of a separate array for each data member of the structure. This combined with the fact that the algorithm generally works on a small amount of data makes memory allocations a significant problem.
+With the optimized version of the VELO-UT algorithm, up to 20\% of the computation time was spent with memory allocation. The cost of memory allocation in an application depends most on the number of allocations, not the size of the allocations. Large allocations are much cheaper per byte allocated, so it is worth allocating an array for all objects upfront instead of allocating each object individually. The optimized VELO-UT algorithm uses this technique, however, the SOA data layouts require the allocation of a separate array for each data member of the structure. This, combined with the fact that the algorithm generally works on a small amount of data, makes memory allocations a significant problem.
 
 \vspace{1pc}
 
-Two options seems straightforward to reduce the number of memory allocations: allocating one large block of memory for all the contents of the SOAs, or using a global memory pool instead of turning to the system memory allocator. The latter results in simpler code and make it possible to reuse existing code such as the \code{std::vector}. Additionally, the way I'm implementing SOA containers through code generation with template metaprogramming and \code{std::vector}s, extending my containers with custom allocators like the STL itself is more natural.
+Two options seems straightforward to reduce the number of memory allocations: allocating one large block of memory for all the contents of the SOAs, or using a global memory pool instead of turning to the system memory allocator. The latter results in simpler code and make it possible to reuse existing code and the standard library facilities, such as the \code{std::vector}. Additionally, because of the way I'm implementing SOA containers via compile-time code generation (template metaprogramming) and \code{std::vector}s, extending my containers with custom STL-compliant allocators is more natural.
 
 \vspace{1pc}
 
-The idea is to have a fast memory pool that it initialized at the beginning of the algorithm and torn down at the end. All memory allocations for the steps in-between are served from the pool instead of the OS memory allocator. This is achieved by initializing all \code{std::vector}s with this memory pool.
+The idea is to have a fast memory pool that is initialized at the beginning of the algorithm and torn down at the end. (One initialization-destruction cycle per collision event.) All memory allocations for the steps in-between are served from the pool instead of the OS memory allocator. This is achieved by initializing all \code{std::vector}s with this memory pool.
 
 
 \vspace{1pc}
@@ -1352,7 +1352,7 @@ Stack allocators are wasteful, because previously requested blocks are never ind
 
 In case the allocator would run out of space, a new empty block is requested from the operating system. Even though this case is handled, the goal is to minimize the number of requests to the OS, so the initial block size is tuned so as to fit all data of the algorithm.
 
-Stack allocators are extremely fast, as all it takes to allocate a new memory block is to return the offset pointer and increment the offset -- a couple of integer arithmetic instructions. Even though with the above extension an if statement handles the special case when it runs out of free space, the if rarely ever actually takes this path so the CPU should be hitting near perfect rates for branch prediction.
+Stack allocators are extremely fast, as all it takes to allocate a new memory block is to return the offset pointer and increment the offset -- a couple of integer arithmetic instructions. Additionally, a potentially slow \code{if} statement handles the special case when the large block fills up, but the code practically never runs this special case, so the branch prediction in the CPU should hit perfect success rates, resulting in no performance loss despite branching.
 
 
 \subsection{Results}
@@ -1403,7 +1403,7 @@ It is worth noting, however, that according to Amdahl's law, with about 75\% of 
 
 The two most significant problems with the original algorithm are being bound by memory and by bad speculation.
 
-Understanding bad speculation is straightforward, if the CPU guesses to go on the \code{true} branch of an \code{if} statement and queues the upcoming instructions of that branch, but it happens that the \code{if} executes the \code{false} branch, all the queued instructions have to be cancelled.\cite{intel_vtune_docs} To alleviate this issue, one should remove branching altogether or, if not possible, make them more predictable.
+Understanding bad speculation is straightforward. When the CPU guesses to go on the \code{true} branch of an \code{if} statement and queues the upcoming instructions of that branch, but it happens that the \code{if} executes the \code{false} branch, all the queued instructions have to be cancelled.\cite{intel_vtune_docs} This has a significant performance hit. To alleviate this issue, one should remove branching altogether or, if not possible, make them more predictable.
 
 As the profiler suggests, the code is mostly memory bound, more specifically, L1 cache bound. According to documentation from Intel, this metric shows up when the CPU is waiting for L1 load operations when the L1 cache was hit. This can happen, for example, when a load depends on an older store. To alleviate the problem, data dependencies can be rethought and the number of memory accesses per cycles spent with computation can be reduced.\cite{intel_vtune_docs}
 
@@ -1417,7 +1417,7 @@ As the profiler suggests, the code is mostly memory bound, more specifically, L1
 
 Despite the optimized version being 2.5 times faster, the microarchitecture usage pattern shows some resemblance.
 
-The most notable difference is the complete absence of bad speculation problems. I made a good effort to remove branching from the code so that computing passes can iterate over the entire datasets without conditional code execution. One trick to mitigate branching is in the filtering loops (\ref{sec_velout_filtering_vect} and \ref{sec_velout_vectorize_gathering_hits}) where masking and permuting of AVX registers is leveraged to emulate branching. Other tricks are, for example, the use of tiny branches which optimize out to CMOV instructions or the exploitation of boolean to integer conversion to obtain conditional numeric values by arithmetic instead of branching. The code for the fitting (\ref{sec_velout_vectorize_extrap_fit}) needs to handle track candidates with either 3 or 4 hits, but instead of branching, the unused hit in the 3-hit-case is simply masked out of the computations by using a weight of zero. This incurs a very little penalty, as the weight is needed for the algorithm regardless, and the elimination of branches allows for perfect vectorization.
+The most notable difference is the complete absence of bad speculation problems. I made a good effort to remove branching from the code so that computing passes can iterate over the entire datasets without conditional code execution. One trick to mitigate branching is in the filtering loops (\ref{sec_velout_filtering_vect} and \ref{sec_velout_vectorize_gathering_hits}) where masking and permuting of AVX registers is leveraged to emulate branching. Other tricks are, for example, the use of tiny branches which optimize out to CMOV instructions or the exploitation of boolean to integer conversion to obtain conditional numeric values by arithmetic instead of branching. The code for the fitting (\ref{sec_velout_vectorize_extrap_fit}) needs to handle track candidates with either 3 or 4 hits, but instead of branching, the unused hit in the 3-hit case is simply masked out of the computations by using a weight of zero. This incurs a very little penalty, as the weight is needed for the algorithm regardless, and the elimination of branches allows for perfect vectorization.
 
 \vspace{1pc}
 
@@ -1461,7 +1461,7 @@ In place of branch prediction, VTune shows the algorithm is core bound. VTune in
 	\label{fig_velout_with_alloc}
 \end{figure}
 
-Figure \ref{fig_velout_without_alloc} shows that without any special memory allocator, the program spends more than 13 percent in memory allocation. (Interestingly, the freeing of memory does not seem to take significant amount of computation.) However, thanks to the stack allocator, this can be reduced to less than 3 percent of the CPU time. The difference shown in the profiler manifests in the runtime as expected: 33.8 seconds with the default allocator compared to 29.1 seconds with the stack allocator, that is a gain of 14\%.
+Figure \ref{fig_velout_without_alloc} shows that without any special memory allocator, the program spends more than 13 percent in memory allocation. (Interestingly, the freeing of memory does not seem to take significant amount of computation.) However, thanks to the stack allocator, this can be reduced to less than 3 percent of the CPU time, as seen on figure \ref{fig_velout_with_alloc}. The difference shown in the profiler manifests in the runtime as expected: 33.8 seconds with the default allocator compared to 29.1 seconds with the stack allocator, that is a gain of 14\%.
 
 
 \subsection{Alternative VELO-UT algorithms}\label{sec_velout_alternative}
@@ -1470,11 +1470,11 @@ One of the main steps of the VELO-UT algorithm is to find hits in the UT that al
 
 \subsubsection{Parabola extrapolation of VELO tracks}
 
-The first solution I tested was to extrapolate the straight VELO tracks through the UT. For the extrapolated section of the tracks, I used a parabola that smoothly aligns with the VELO track on one end and coincides with a hit from the last layer of the UT. As the next step, the single closest hit from the remaining 3 UT layers are assigned to the extrapolated track.
+The first solution I tested was to extrapolate the straight VELO tracks through the UT. For the extrapolated section of the tracks, I used a parabola that smoothly aligns with the VELO track on one end and coincides with a hit from the last layer of the UT. As the next step, the single closest hit from the remaining 3 UT layers are assigned to the extrapolated track. (Illustrated on figure \ref{fig_velout_parabola_fit}.)
 
 Since there may be multiple last-layer UT hits for each VELO track that fall within a certain window of the track's line, there will also be multiple extrapolated candidates per VELO track. To select the best candidate, the distance of the hits from the parabola are summed, and one candidate with the least error is selected.
 
-The advantage of this method is that it eliminates the expensive and serial combinatorics involved in finding 4 aligned UT hits. Solely the last layer and the VELO tracks are used to seed extrapolated candidates, and once the data structures are built, calculating the parameters of the parabolas can be parallelized. The assignment of hits from the other layers is also straightforward as it can be parallelized over the hits within a window close to the parabola, and the problem is simply to pick the hit nearest.
+The advantage of this method is that it eliminates the expensive and serial combinatorics involved in finding 4 aligned UT hits. Solely the last layer and the VELO tracks are used to seed extrapolated candidates, and once the data structures are built, calculating the parameters of the parabolas can be parallelized. The assignment of hits from the other layers is also straightforward as it can be parallelized over the hits within a window close to the parabola, and the problem is simply to pick the nearest hit.
 
 \begin{figure}[H]
 	\begin{center}
@@ -1485,7 +1485,7 @@ The advantage of this method is that it eliminates the expensive and serial comb
 \end{figure}
 
 
-Unfortunately, the algorithm did not produce good results form the physics perspective. In reality, the uncertainty in the VELO tracks' direction and position is too large so when extrapolated just linearly, the corresponding UT hits often lie on both sides of the line. In such a case, the parabola that is constrained to the VELO track's line on one end will show significant deviation from the real hits no matter its parameters. This means the extrapolation will pick up incorrect hits or will have errors too large to be taken as a valid solution.
+Unfortunately, the algorithm did not produce good results form the physics perspective. In reality, the uncertainty in the VELO tracks' direction and position is too large so when extrapolated just linearly, the corresponding UT hits often lie on both sides of the line. In such a case, the parabola that is constrained to the VELO track's line on one end will show significant deviation from the real hits no matter its parameters. (Figure \ref{fig_velout_parabola_misfit}.) This means the extrapolation will pick up incorrect hits or will have errors too large to be taken as a valid solution.
 
 \begin{figure}[H]
 	\begin{center}
@@ -1498,10 +1498,10 @@ Unfortunately, the algorithm did not produce good results form the physics persp
 
 \subsubsection{Hough-transform/gradient descent hybrid line finding}
 
-The experiment with parabola extrapolation showed that the key is not the alignment of hits to the VELO track, but finding four hits that themselves align on a straight line very well. (The straight line is reasonable despite the slight bend of the particles due the magnetic field, especially as this is optimized for high-momentum particles that bend only a little.) The original line aligned hit finding extrapolates the VELO track as a straight lines and selects hits from each layer within a certain window of that line. Then each combination of four hits is tested if they lie on a straight line. While there are early exit conditions, such as not being able to find even a third aligned hit, this code is still poorly vectorizable and generally expensive because of the sheer number of combinations to be tested. The code also scales very poorly, as the more hits there are the exponentially more combinations it has to test.
+The experiment with parabola extrapolation showed that the key is not the alignment of hits to the VELO track, but finding four hits that themselves align on a straight line very well. (The straight line is reasonable despite the slight bend of the particles due the magnetic field, especially as this is optimized for high-momentum particles that bend only a little.) The original line aligned hit finding extrapolates the VELO track as a straight lines and selects hits from each layer within a certain window of that line. Then each combination of four hits is tested if they lie on a straight line. While there are early exit conditions, such as not being able to find even a third aligned hit, this code is still generally expensive because of the sheer number of combinations to be tested. The code also scales very poorly, as the more hits there are the number of combinations to test explodes.
 \vspace{1pc}
 
-A method that has a better time complexity to find lines in such a scenario is the Hough-transform\cite{wiki_hough_transform}. To construct the Hough space, one has to loop over all points, then increase all the pixels in the feature that correspond to a line through the point in subject. As this was not optimal for vectorization and low amount of calculation, I did it the other way around. For each point in the Hough space, I calculated how far the line represented by the Hough space point is from each of the image space and summed the distances up. Vectorizing over the Hough space is easy, and the task is now reduced to a minimum finding in the Hough space.
+A method that has a better time complexity to find lines in such a scenario is the Hough-transform\cite{wiki_hough_transform}. To construct the Hough space, one has to loop over all points, then increase all the pixels in the feature that correspond to a line through the point in subject. As this was not optimal for vectorization and low amount of calculation, I did it the other way around. For each point in the Hough space, I calculated how far the line represented by the Hough space point is from each of the image space and summed the distances up. Vectorizing over the Hough space is easy, and the task is now reduced to a minimum finding in the Hough space. The method is illustrated on figure \ref{fig_velout_hough_method}.
 
 \begin{figure}[H]
 	\centering
@@ -1521,13 +1521,13 @@ A method that has a better time complexity to find lines in such a scenario is t
 	\label{fig_velout_hough_method}
 \end{figure}
 
-To construct the Hough space, it was not enough to simply take the distance of the point and the line. Instead, I ran the distance through a function that converges to 1 at either ends and has a downwards bump in the middle with $f(0)$ being zero. This is the cause of the narrow greenish bands and the large yellow plateaus. Theoretically, one could run a gradient descent on the surface and find the absolute minimum with random search.
+To construct the Hough space, it was not enough to simply take the distance of the point and the line. Instead, I ran the distance through a function $f(\text{distance})$ that converges to 1 at either ends and has a downwards bump in the middle with $f(0)$ being zero. This is the cause of the narrow greenish bands and the large yellow plateaus. Theoretically, one could run a gradient descent on the surface and find the absolute minimum with random search.
 \vspace{1pc}
 
 In the actual implementation, I did not do gradient descent on the high resolution image, but instead reduced the Hough space to be as small as 16 by 8 pixels. This was enough to specify the line with sufficient accuracy, and was small enough for the amount of calculation to be reasonable. Notice that in this case, there are three nested loops: 8 iterations over the width, 16 iterations over the height and iterations through all points/hits. The outer loop of 8 iterations corresponds to the SIMD width and is thus reduced to a single CPU instruction. In place of gradient descent, the 8-by-16 pixel area was brute-force searched for the smallest element using SIMD.
 \vspace{1pc}
 
-Despite reducing the amount of computation and vectorizing everything, the method did not work as its computation time was still too much. This is an interesting example where an $O(n!)$ algorithm (although with early exits) beats an $O(n)$ algorithm due to the large difference in constants.
+Despite reducing the amount of computation and vectorizing everything, the method did not work as its computation time was still too much. This is an interesting example where an $O(n^4)$ algorithm (although with early exits) beats an $O(n)$ algorithm due to the large difference in constants.
 
 
 %----------------------------------------------------------------------------
@@ -1561,56 +1561,61 @@ As for the VELO-UT tracker, the physics performance is slightly lower than expec
 % REFERENCES
 %----------------------------------------------------------------------------
 \newpage
-\section{References}
+\section*{References}
 
-\begin{thebibliography}{asd}
-	\bibitem{cern_about} About CERN: \\
-		\url{https://home.cern/about}
-	\bibitem{cern_accel_complex} CERN's accelerator complex: \\
-		\url{https://home.cern/about/accelerators}
-	\bibitem{lhc_desc} About the Large Hadron Collider: \\
-		\url{https://home.cern/topics/large-hadron-collider}
-	\bibitem{lchb_desc} About the Large Hadron Collider beauty experiment: \\
-		\url{https://home.cern/about/experiments/lhcb}
-	\bibitem{lhc_lead_ions} Why collide lead ions: \\
-		\url{http://alicematters.web.cern.ch/?q=FAQ-why-lead-ions}
-	\bibitem{lhc_energy} Energy of the LHC: \\
-		\url{https://home.cern/about/engineering/restarting-lhc-why-13-tev}
-	\bibitem{lhc_bunch_collisions} LHC collisions: \\
-		\url{https://lhc-machine-outreach.web.cern.ch/lhc-machine-outreach/collisions.htm}
-	\bibitem{lhc_facts_and_figures} LHC facts and figures: \\
-		\url{https://public-archive.web.cern.ch/en/LHC/Facts-en.html}
-	\bibitem{kalman_filter_wiki} Explanation of Kalman filters: \\
-		\url{https://en.wikipedia.org/wiki/Kalman_filter}
-	\bibitem{kalman_filter_lhcb} Additional read on track fitting: \\
-		\url{https://twiki.cern.ch/twiki/bin/view/LHCb/LHCbTrackFitting}
-	\bibitem{tracker_tdr} Tracker (UT and FT) Technical Design Report: \\
-		\url{https://cds.cern.ch/record/1647400?ln=en}
-	\bibitem{god_class_wiki} God class anti-pattern: \\
-		\url{https://en.wikipedia.org/wiki/God_object}
-	\bibitem{lemire_simd_prune} Pruning with AVX2: \\
-		\url{https://github.com/lemire/simdprune}
-	\bibitem{intel_vtune_docs} Documentation of microarchitecture analysis by Intel: \\
-		\url{https://software.intel.com/en-us/vtune-amplifier-help-core-bound}\\
-		\url{https://software.intel.com/en-us/vtune-amplifier-help-l1-bound}\\
-		\url{https://software.intel.com/en-us/vtune-amplifier-cookbook-top-down-microarchitecture-analysis-method}
-	\bibitem{accelerator_image_src_1} Particle accelerators:\\
-		\url{http://universe-review.ca/R15-20-accelerators01.htm}
-	\bibitem{lhcb_coordinate_systems} LHCb Coordinate Systems:\\
-		\url{https://edms.cern.ch/ui/file/372642/1/LHCb-coord-system.pdf}
-	\bibitem{lb_event_display} LHCb Event Display:\\
-		\url{https://lbevent.cern.ch/EventDisplay/index.html}
-	\bibitem{tracker_image} L.B.A. Hommels: The LHCb outer tracker detector design and production\\
-		\url{https://www.researchgate.net/publication/4154465_The_LHCb_outer_tracker_detector_design_and_production}
-	\bibitem{lhcb_twiki} LHCB Wiki:\\
-		\url{https://twiki.cern.ch/}
-	\bibitem{cern_document_server} CERN Document Server, a collection of public documents of CERN:\\
-		\url{cds.cern.ch}
-	\bibitem{lhcb_tracking_strategies} LHCB Tracking Strategies:\\
-		\url{https://twiki.cern.ch/twiki/bin/view/LHCb/LHCbTrackingStrategies}
-	\bibitem{wiki_hough_transform} Hough-transform:\\
-		\url{https://en.wikipedia.org/wiki/Hough_transform}
-\end{thebibliography}
+{
+	\raggedright
+	\Urlmuskip=0mu plus 1mu
+
+	\begin{thebibliography}{asd}
+		\bibitem{cern_about} About CERN: \\
+			\url{https://home.cern/about}
+		\bibitem{cern_accel_complex} CERN's accelerator complex: \\
+			\url{https://home.cern/about/accelerators}
+		\bibitem{lhc_desc} About the Large Hadron Collider: \\
+			\url{https://home.cern/topics/large-hadron-collider}
+		\bibitem{lchb_desc} About the Large Hadron Collider beauty experiment: \\
+			\url{https://home.cern/about/experiments/lhcb}
+		\bibitem{lhc_lead_ions} Why collide lead ions: \\
+			\url{http://alicematters.web.cern.ch/?q=FAQ-why-lead-ions}
+		\bibitem{lhc_energy} Energy of the LHC: \\
+			\url{https://home.cern/about/engineering/restarting-lhc-why-13-tev}
+		\bibitem{lhc_bunch_collisions} LHC collisions: \\
+			\url{https://lhc-machine-outreach.web.cern.ch/lhc-machine-outreach/collisions.htm}
+		\bibitem{lhc_facts_and_figures} LHC facts and figures: \\
+			\url{https://public-archive.web.cern.ch/en/LHC/Facts-en.html}
+		\bibitem{kalman_filter_wiki} Explanation of Kalman filters: \\
+			\url{https://en.wikipedia.org/wiki/Kalman_filter}
+		\bibitem{kalman_filter_lhcb} Additional read on track fitting: \\
+			\url{https://twiki.cern.ch/twiki/bin/view/LHCb/LHCbTrackFitting}
+		\bibitem{tracker_tdr} Tracker (UT and FT) Technical Design Report: \\
+			\url{https://cds.cern.ch/record/1647400?ln=en}
+		\bibitem{god_class_wiki} God class anti-pattern: \\
+			\url{https://en.wikipedia.org/wiki/God_object}
+		\bibitem{lemire_simd_prune} Pruning with AVX2: \\
+			\url{https://github.com/lemire/simdprune}
+		\bibitem{intel_vtune_docs} Documentation of microarchitecture analysis by Intel: \\
+			\url{https://software.intel.com/en-us/vtune-amplifier-help-core-bound}\\
+			\url{https://software.intel.com/en-us/vtune-amplifier-help-l1-bound}\\
+			\url{https://software.intel.com/en-us/vtune-amplifier-cookbook-top-down-microarchitecture-analysis-method}
+		\bibitem{accelerator_image_src_1} Particle accelerators:\\
+			\url{http://universe-review.ca/R15-20-accelerators01.htm}
+		\bibitem{lhcb_coordinate_systems} LHCb Coordinate Systems:\\
+			\url{https://edms.cern.ch/ui/file/372642/1/LHCb-coord-system.pdf}
+		\bibitem{lb_event_display} LHCb Event Display:\\
+			\url{https://lbevent.cern.ch/EventDisplay/index.html}
+		\bibitem{tracker_image} L.B.A. Hommels: The LHCb outer tracker detector design and production\\
+			\url{https://www.researchgate.net/publication/4154465_The_LHCb_outer_tracker_detector_design_and_production}
+		\bibitem{lhcb_twiki} LHCB Wiki:\\
+			\url{https://twiki.cern.ch/}
+		\bibitem{cern_document_server} CERN Document Server, a collection of public documents of CERN:\\
+			\url{https://cds.cern.ch}
+		\bibitem{lhcb_tracking_strategies} LHCB Tracking Strategies:\\
+			\url{https://twiki.cern.ch/twiki/bin/view/LHCb/LHCbTrackingStrategies}
+		\bibitem{wiki_hough_transform} Hough-transform:\\
+			\url{https://en.wikipedia.org/wiki/Hough_transform}
+	\end{thebibliography}
+}
 
 
 %----------------------------------------------------------------------------
@@ -1618,7 +1623,8 @@ As for the VELO-UT tracker, the physics performance is slightly lower than expec
 %----------------------------------------------------------------------------
 
 \newpage
-\section{Appendices}
+\section*{Appendices}
+\titlelabel{Appendix \thetitle\quad}
 
 \appendix
 \renewcommand{\thesubsection}{\Alph{subsection}}
@@ -1631,17 +1637,17 @@ The document includes many screenshots of Intel's VTune Amplifier XE. VTune is a
 In addition to line-based timing information, VTune also gathers complete stack traces, thus it can show the relative or absolute time certain functions have taken. VTune can visualize the relationship between functions in multiple ways.
 \vspace{1pc}
 
-Alongside the \textit{hotspots} profiling described above, VTune also can also analyze microarchitecture, threading and memory usage. Microarchitecture refers to how well the program utilizes the available functional units of the CPU, such as memory load/store, floating point unit, integer arithmetic and divider. Modern CPUs are able to perform multiple independent integer operations at the same time or overlap memory transfers with arithmetic. VTune attempts to highlight issues with pipelining or imbalanced load such as overstressed divider. VTune also helps analyze memory usage issues by providing information on main memory bandwidth, cache utilization and cache misses.
+Alongside the hotspots profiling described above, VTune also can also analyze microarchitecture, threading and memory usage. Microarchitecture refers to how well the program utilizes the available functional units of the CPU, such as memory load/store, floating point unit, integer arithmetic and divider. Modern CPUs are able to perform multiple independent integer operations at the same time or overlap memory transfers with arithmetic. VTune attempts to highlight issues with pipelining or imbalanced load such as overstressed divider. VTune also helps analyze memory usage issues by providing information on main memory bandwidth, cache utilization and cache misses.
 \vspace{1pc}
 
 More information can be found on Intel's website: \url{https://software.intel.com/en-us/vtune}.
 
 \subsection{LHCb track types}
 
-Throughout the document, there are several \textit{track types} mentioned. In LHCb, tracks are classified based on which sub-detectors they interact with and which direction they have.
+Throughout the document, there are several track types mentioned. In LHCb, tracks are classified based on which sub-detectors they interact with and which direction they have.
 \vspace{1pc}
 
-\noindent We differentiate the following track types:
+\noindent We differentiate the following track types (illustrated on figure \ref{fig_lhcb_track_types}):
 \begin{itemize}
 	\item Backwards track: exits the VELO the direction opposite to the other sub-detectors (not shown on figure \ref{fig_lhcb_track_types})
 	\item VELO track: seen in the VELO, but does not interact with any other sub-detector
@@ -1662,9 +1668,9 @@ Throughout the document, there are several \textit{track types} mentioned. In LH
 
 \subsection{LHCb software configurations}
 
-The \textit{best physics} and \textit{best throughput} configurations are mentioned throughout the text. The LHCb trigger does not have one fixed implementation, rather, the parts it is made of can be combined and configured differently. Generally, performance (that is, throughput) can be traded for physics accuracy. There are several configurations tested at all times so that a good compromise between physics accuracy and throughput can be selected. The \textit{best physics} and \textit{best throughput} configurations are the two extremes.
+The \textit{best physics} and \textit{best throughput} configurations are mentioned throughout the text. The LHCb trigger does not have one fixed implementation, rather, the parts it is made of can be combined and configured differently. Generally, performance (that is, throughput) can be traded for physics accuracy. There are several configurations tested at all times so that a good compromise between physics accuracy and throughput can be selected. The best physics and best throughput configurations are the two extremes.
 
-The \textit{best physics} case includes complete processing of all data and an additional track fitting via the Kalman filter at the end. This, however, produces a generally low throughput. The \textit{best throughput} configuration introduces filtering early in the processing chain to keep only relevant tracks for further processing. Unfortunately, this filtering makes certain physics analyses impossible. Additionally, the final filtering may be reduced or omitted altogether for the \textit{best throughput} configuration.
+The best physics case includes complete processing of all data and an additional track fitting via the Kalman filter at the end. This, however, produces a generally low throughput. The best throughput configuration introduces filtering early in the processing chain to keep only relevant tracks for further processing. Unfortunately, this filtering makes certain physics analyses impossible. Additionally, the final filtering may be reduced or omitted altogether for the best throughput configuration.
 
 
 %----------------------------------------------------------------------------
