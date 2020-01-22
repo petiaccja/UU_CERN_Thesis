@@ -15,6 +15,7 @@
 \usepackage{titlesec}
 \usepackage{fontspec}
 \usepackage{ragged2e}
+\usepackage{fancyhdr}
 
 % Compiler/IDE directives
 % !TeX spellcheck = en_US
@@ -84,18 +85,34 @@
 %----------------------------------------------------------------------------
 % TITLE
 %----------------------------------------------------------------------------
+\thispagestyle{empty}
+
 \begin{center}
-	\Huge Performance optimization of the online data processing software for a high-energy physics experiment\\
-	\Large Thesis report\\
-	\vspace{1pc}
-	\huge Péter Kardos \\
-	\large 2018-2019
+	\sffamily
+	\vspace*{0.18\paperheight}
+	\Huge \textbf{Performance optimization of the online data processing software of a high-energy physics experiment}
+
+	\vspace{2pc}
+	\Large \textbf{by}
+
+	\Large \textbf{Péter Kardos}
+
+	\vspace{2pc}
+	\large Master's Programme in Computational Science
+
+	\large Department of Information Technology
+
+	\large Uppsala University, 2018-2020
+
+	\vfill
+	\textcopyright \;Péter Kardos 2020
 \end{center}
 
 
 %----------------------------------------------------------------------------
 % === ABSTRACT ===
 %----------------------------------------------------------------------------
+\newpage
 \section*{Abstract}
 
 The LHCb experiment probes the differences between matter and anti-matter by examining particle collisions. Like any modern high energy physics experiment, LHCb relies on a complex hardware and software infrastructure to collect and analyze the data generated from particle collisions. To filter out unimportant data before writing it to permanent storage, particle collision events have to be processed in real-time which requires a lot of computing power.
