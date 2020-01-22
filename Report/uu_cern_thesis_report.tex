@@ -6,8 +6,7 @@
 \usepackage{amsfonts}
 \usepackage{subcaption}
 \usepackage{graphicx}
-\usepackage{listingsutf8}
-\usepackage[utf8]{inputenc}
+\usepackage{listings}
 \usepackage{xcolor}
 \usepackage[a4paper, total={16cm, 23.7cm}]{geometry}
 \usepackage[colorlinks=true,urlcolor=blue]{hyperref}
@@ -1579,6 +1578,7 @@ As for the VELO-UT tracker, the physics performance is slightly lower than expec
 %----------------------------------------------------------------------------
 \newpage
 \section*{References}
+\addcontentsline{toc}{section}{References}
 
 {
 	\raggedright
@@ -1641,10 +1641,11 @@ As for the VELO-UT tracker, the physics performance is slightly lower than expec
 
 \newpage
 \section*{Appendices}
-\titlelabel{Appendix \thetitle\quad}
+\addcontentsline{toc}{section}{Appendices}
 
 \appendix
 \renewcommand{\thesubsection}{\Alph{subsection}}
+\titlelabel{Appendix \thetitle\quad}
 
 \subsection{Intel VTune Amplifier XE}
 
