@@ -15,6 +15,8 @@
 \usepackage{fontspec}
 \usepackage{ragged2e}
 \usepackage{fancyhdr}
+\usepackage{changepage}
+\usepackage{setspace}
 
 % Compiler/IDE directives
 % !TeX spellcheck = en_US
@@ -84,39 +86,131 @@
 %----------------------------------------------------------------------------
 % TITLE
 %----------------------------------------------------------------------------
+\newgeometry{left=1cm, right=1cm, top=1cm, bottom=1cm, noheadfoot, nomarginpar}
+\begingroup
 \thispagestyle{empty}
+\setlength{\topskip}{0pt}
+\setlength{\parindent}{0pt}
 
-\begin{center}
-	\sffamily
-	\vspace*{0.18\paperheight}
-	\Huge \textbf{Performance optimization of the online data processing software of a high-energy physics experiment}
+\colorbox[rgb]{0.8, 0.8, 0.8}{%
+\begin{minipage}[t][0.99\textheight]{0.25\textwidth}\vspace{0pt}%
+	\begin{center}
+		\includegraphics[width=\textwidth]{uu_logo_color.png}
+	\end{center}
+\end{minipage}}%
+\hfill
+\begin{minipage}[t][0.99\textheight]{0.70\textwidth}\vspace{0pt}%
+	\begin{flushright}
+		\sffamily
+		Examensarbete 45 hp\\
+		Februari 2020		
+	\end{flushright}
 
-	\vspace{2pc}
-	\Large \textbf{by}
+	\vspace{0.15\paperheight}
+	\begin{adjustwidth}{1cm}{1cm}
+		\sffamily
+		\LARGE Performance optimization of the online data processing software of a high-energy physics experiment
 
-	\Large \textbf{Péter Kardos}
+		\noindent\rule[0.5ex]{\linewidth}{1pt}
 
-	\vspace{2pc}
-	\large Master's Programme in Computational Science
-
-	\large Department of Information Technology
-
-	\large Uppsala University, 2018-2020
+		\Large Péter Kardos
+	\end{adjustwidth}
 
 	\vfill
-	\textcopyright \;Péter Kardos 2020
-\end{center}
+	{
+		\setstretch{0.4}
+		\begin{flushright}
+			Institutionen för Informationsteknologi
+
+			\noindent\rule[0.5ex]{0.54\linewidth}{1pt}
+
+			Department of Information Technology
+		\end{flushright}
+	}
+\end{minipage}%
+
+\endgroup
+
+\restoregeometry
 
 
 %----------------------------------------------------------------------------
 % === ABSTRACT ===
 %----------------------------------------------------------------------------
 \newpage
-\section*{Abstract}
 
-The LHCb experiment probes the differences between matter and anti-matter by examining particle collisions. Like any modern high energy physics experiment, LHCb relies on a complex hardware and software infrastructure to collect and analyze the data generated from particle collisions. To filter out unimportant data before writing it to permanent storage, particle collision events have to be processed in real-time which requires a lot of computing power.
-This thesis focuses on performance optimizations of several parts of the real-time data processing software: i) one of the particle path reconstruction steps; ii) the particle path refining step; iii) the data structures used by the real-time reconstruction algorithms. The thesis investigates and employs techniques such as vectorization, cache-friendly memory structures, microarchitecture analysis, and memory allocation optimizations.
-The resulting performance-optimized code uses today's many-core, data-parallel, superscalar processors to their full potential in order to meet the performance demands of the experiment. The thesis results show that the reconstruction step got 3 times faster, the refinement step got 2 times faster and the changes to the data model allowed vectorization of most reconstruction algorithms.
+\newgeometry{left=1cm, right=1cm, top=1cm, bottom=1cm, noheadfoot, nomarginpar}
+\begingroup
+\thispagestyle{empty}
+\setlength{\topskip}{0pt}
+\setlength{\parindent}{0pt}
+
+\begin{minipage}[t][0.99\textheight]{0.25\textwidth}\vspace{0pt}%
+	\begin{center}
+		\includegraphics[width=\textwidth]{uu_logo_color.png}
+	\end{center}
+
+	\scriptsize
+
+	\textbf{Teknisk- naturvetenskaplig fakultet}\\
+	\textbf{UTH-enheten}
+	\vspace{0.8pc}
+
+	Besökadress:\\
+	Ångströmlaboratoriet\\
+	Lägerhyddsvägen 1\\
+	Hus 4, Plan 0
+	\vspace{0.8pc}
+
+	Postadress:\\
+	Box 536\\
+	751 21 Uppsala
+	\vspace{0.8pc}
+
+	Telefon:\\
+	018 - 471 30 03
+	\vspace{0.8pc}
+
+	Telefax:\\
+	018 - 471 30 00
+	\vspace{0.8pc}
+
+	Hemsida:\\
+	\url{http://www.teknat.uu.se/student}
+\end{minipage}%
+\hfill
+\begin{minipage}[t][0.99\textheight]{0.70\textwidth}\vspace{0pt}%
+	\section*{Abstract}
+	{
+		\setstretch{0.4}
+		\sffamily
+		\large \textbf{Performance optimization of the online data processing software of a high-energy physics experiment}
+
+		\noindent\rule[0.5ex]{\linewidth}{1pt}
+
+		\vspace{0.35cm}
+		\normalsize \textbf{\textit{Péter Kardos}}
+	}
+	\vspace{1.5cm}
+
+	The LHCb experiment probes the differences between matter and anti-matter by examining particle collisions. Like any modern high energy physics experiment, LHCb relies on a complex hardware and software infrastructure to collect and analyze the data generated from particle collisions. To filter out unimportant data before writing it to permanent storage, particle collision events have to be processed in real-time which requires a lot of computing power.
+	This thesis focuses on performance optimizations of several parts of the real-time data processing software: i) one of the particle path reconstruction steps; ii) the particle path refining step; iii) the data structures used by the real-time reconstruction algorithms. The thesis investigates and employs techniques such as vectorization, cache-friendly memory structures, microarchitecture analysis, and memory allocation optimizations.	
+	The resulting performance-optimized code uses today's many-core, data-parallel, superscalar processors to their full potential in order to meet the performance demands of the experiment. The thesis results show that the reconstruction step got 3 times faster, the refinement step got 2 times faster and the changes to the data model allowed vectorization of most reconstruction algorithms.
+
+	\vfill
+
+	{
+		\sffamily
+		\footnotesize
+		Handledare: Sebastien Ponce\\
+		Ämnesgranskare: Anca-Juliana Stoica\\
+		Examinator: Jarmo Rantakokko
+	}
+\end{minipage}%
+
+\endgroup
+
+\restoregeometry
 
 %----------------------------------------------------------------------------
 % === ACKNOWLEDGMENTS ===
