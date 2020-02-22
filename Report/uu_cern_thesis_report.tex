@@ -1,4 +1,4 @@
-\documentclass[12pt]{article}
+\documentclass[12pt,twoside]{article}
 
 % Packages
 \usepackage{float}
@@ -8,7 +8,7 @@
 \usepackage{graphicx}
 \usepackage{listings}
 \usepackage{xcolor}
-\usepackage[a4paper, total={16cm, 23.7cm}]{geometry}
+\usepackage[a4paper, total={16cm, 23.7cm}, bindingoffset=0mm]{geometry}
 \usepackage[colorlinks=true,urlcolor=blue]{hyperref}
 \usepackage{color}
 \usepackage{titlesec}
@@ -132,54 +132,57 @@
 \endgroup
 
 \restoregeometry
-
+\newpage
+\thispagestyle{empty}
+\vspace*{1pc}
 
 %----------------------------------------------------------------------------
 % === ABSTRACT ===
 %----------------------------------------------------------------------------
 \newpage
 
-\newgeometry{left=1cm, right=1cm, top=1cm, bottom=1cm, noheadfoot, nomarginpar}
+\newgeometry{left=17mm, right=15mm, top=1cm, bottom=1cm, noheadfoot, nomarginpar}
 \begingroup
 \thispagestyle{empty}
 \setlength{\topskip}{0pt}
 \setlength{\parindent}{0pt}
 
-\begin{minipage}[t][0.99\textheight]{0.25\textwidth}\vspace{0pt}%
+\begin{minipage}[t][0.99\textheight]{42mm}\vspace{0pt}%
 	\begin{center}
 		\includegraphics[width=\textwidth]{uu_logo_color.png}
 	\end{center}
 
 	\scriptsize
-
-	\textbf{Teknisk- naturvetenskaplig fakultet}\\
-	\textbf{UTH-enheten}
-	\vspace{0.8pc}
-
-	Besökadress:\\
-	Ångströmlaboratoriet\\
-	Lägerhyddsvägen 1\\
-	Hus 4, Plan 0
-	\vspace{0.8pc}
-
-	Postadress:\\
-	Box 536\\
-	751 21 Uppsala
-	\vspace{0.8pc}
-
-	Telefon:\\
-	018 - 471 30 03
-	\vspace{0.8pc}
-
-	Telefax:\\
-	018 - 471 30 00
-	\vspace{0.8pc}
-
-	Hemsida:\\
-	\url{http://www.teknat.uu.se/student}
+	\begin{flushleft}		
+		\textbf{Teknisk- naturvetenskaplig fakultet}\\
+		\textbf{UTH-enheten}
+		\vspace{0.8pc}
+		
+		Besökadress:\\
+		Ångströmlaboratoriet\\
+		Lägerhyddsvägen 1\\
+		Hus 4, Plan 0
+		\vspace{0.8pc}
+		
+		Postadress:\\
+		Box 536\\
+		751 21 Uppsala
+		\vspace{0.8pc}
+		
+		Telefon:\\
+		018 - 471 30 03
+		\vspace{0.8pc}
+		
+		Telefax:\\
+		018 - 471 30 00
+		\vspace{0.8pc}
+		
+		Hemsida:\\
+		\url{http://www.teknat.uu.se/student}
+	\end{flushleft}
 \end{minipage}%
 \hfill
-\begin{minipage}[t][0.99\textheight]{0.70\textwidth}\vspace{0pt}%
+\begin{minipage}[t][0.99\textheight]{122mm}\vspace{0pt}%
 	\section*{Abstract}
 	{
 		\setstretch{0.4}
@@ -211,6 +214,9 @@
 \endgroup
 
 \restoregeometry
+\newpage
+\thispagestyle{empty}
+\vspace*{1pc}
 
 %----------------------------------------------------------------------------
 % === ACKNOWLEDGMENTS ===
